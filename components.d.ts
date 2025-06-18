@@ -9,7 +9,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
-    InputText: typeof import('primevue/inputtext')['default']
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     SplitButton: typeof import('primevue/splitbutton')['default']
   }

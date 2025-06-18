@@ -1,6 +1,6 @@
 {
-  "name": "utools-json5",
-  "version": "0.0.0",
+  "name": "utools-json",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -26,8 +26,10 @@
     "@iconify/vue": "^5.0.0",
     "@primevue/auto-import-resolver": "^4.3.5",
     "@types/bun": "^1.2.16",
+    "@types/json5": "^2.2.0",
     "@vitejs/plugin-vue": "^5.2.3",
     "unplugin-vue-components": "^28.7.0",
+    "utools-api-types": "^7.1.0",
     "vite": "npm:rolldown-vite@latest",
     "vite-plugin-vue-devtools": "^7.7.2"
   }

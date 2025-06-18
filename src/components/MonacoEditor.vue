@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { onMounted, onUpdated, ref, useTemplateRef } from 'vue';
+import { onMounted, onUpdated, useTemplateRef } from 'vue';
 
 
 const props = defineProps<{
@@ -24,24 +24,24 @@ onMounted(() => {
       formatOnPaste: true,
     });
 
-    editor.onDidPaste((e) => {
+    editor.onDidPaste((_e) => {
       setTimeout(() => {
-        console.log('Triggering format after paste');
-        editor.trigger('editor', 'editor.action.formatDocument', {});
+        //console.log('Triggering format after paste');
+        editor?.trigger('editor', 'editor.action.formatDocument', {});
       }, 100);
     })
   }
 });
 
 onUpdated(() => {
-  console.log('Editor updated, checking for content change');
+  //console.log('Editor updated, checking for content change');
   if (editor && props.sourceCode !== editor.getValue()) {
     editor.setValue(props.sourceCode);
   }
 });
 
 function triggerEditorAction(action: string, payload: any = {}) {
-  editor.trigger('editor', action, payload);
+  editor?.trigger('editor', action, payload);
 }
 
 function getText() {

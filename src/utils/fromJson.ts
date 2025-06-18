@@ -1,4 +1,4 @@
-import JSON5 from 'json5';
+import JSON5 from 'json5'
 import { jsonToTable, plainHeadersToNested } from './tableJson';
 
 export function oneLineFromJson(jsonText: string): string {

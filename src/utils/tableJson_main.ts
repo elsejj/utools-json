@@ -1,6 +1,6 @@
 
 import { htmlNestedFromJson } from "./fromJson";
-import { json2DShape, jsonToTable, plainHeadersToNested, printTable } from "./tableJson";
+import { json2DShape, jsonToTable, printTable } from "./tableJson";
 
 
 

@@ -28,8 +28,7 @@ export class StringToJSON implements toJSON {
     const isQuoted = stringSigns.some(sign => data.startsWith(sign) && data.endsWith(sign))
     if (isQuoted) {
       // convert to a valid JSON string
-      data = '"' + data.slice(1, -1) + '"'
-      data = JSON.parse(data)
+      data = JSON5.parse(data)
     } else if (!jsonSings.some(sign => data.includes(sign))) {
       // maybe a base64 string, try to decode it
       try {

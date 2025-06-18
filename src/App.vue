@@ -6,7 +6,8 @@
     <footer>
       <div class="flex-none h-12 flex items-center justify-between w-full bg-gray-200 gap-1 p-1">
         <Button id="pasteReplace" icon="icon-[tabler--help]" as="a" link v-tooltip.top="'JSON Path 文档'"
-          href="https://github.com/JSONPath-Plus/JSONPath" target="_blank" />
+          href="https://github.com/JSONPath-Plus/JSONPath" target="_blank"
+          @click="openURL('https://github.com/JSONPath-Plus/JSONPath')" />
         <input class="flex-auto px-2 py-1 border border-gray-300 bg-white rounded" type="text" placeholder="$.<key>"
           v-model="jsonPathFilter" @change="filterJson" @input="filterJson" />
         <Button id="pasteReplace" icon="icon-[fluent-mdl2--paste-as-code]" rounded v-tooltip.top="'替换复制'"
@@ -32,7 +33,22 @@ import { StringToJSON } from './utils/toJson';
 import './workers/monaco'
 
 import { ref } from 'vue';
-import { RefSymbol } from '@vue/reactivity';
+
+const sourceCode = ref(``); // Default JSON content
+
+
+if (window.utools) {
+  window.utools.onPluginEnter((action) => {
+    console.log('Plugin entered:', action);
+    if (typeof action.payload === 'string' && action.payload.length > 5) {
+      try {
+        sourceCode.value = new StringToJSON().toJSON(action.payload) || '';
+      } catch (error) {
+        sourceCode.value = ''
+      }
+    }
+  });
+}
 
 const copyActions = [
   {
@@ -103,14 +119,6 @@ const copyActions = [
   }
 ]
 
-const sourceCode = ref(`{
-  "name": "example",
-  "version": "1.0.0",
-  "description": "An example JSON file",
-  "author": "Your Name",
-  "license": "MIT"
-}`); // Default JSON content
-
 // in filter mode, this is the original source code
 const originalSourceCode = ref('')
 const jsonPathFilter = ref(''); // JSON Path filter input
@@ -144,13 +152,13 @@ async function copyJSON(processor?: (text: string) => string, mimetype?: string)
     if (mimetype) {
       await navigator.clipboard.write([
         new ClipboardItem({
-          [mimetype]: processedText,
+          [mimetype]: new Blob([processedText], { type: mimetype })
         })
       ]);
     } else {
       await navigator.clipboard.writeText(processedText);
     }
-    console.log('Copied JSON to clipboard:', processedText);
+    //console.log('Copied JSON to clipboard:', processedText);
     return processedText;
   } catch (err) {
     console.error('Failed to copy JSON:', err);
@@ -189,7 +197,7 @@ function filterJson() {
       path: jsonPathFilter.value.trim(),
       json: JSON.parse(originalSourceCode.value)
     })
-    console.log('JSONPath result:', result);
+    //console.log('JSONPath result:', result);
     if (noEmptyValue(result)) {
       sourceCode.value = JSON.stringify(result, null, 2);
     } else {
@@ -199,6 +207,12 @@ function filterJson() {
   catch (err) {
     console.error('JSONPath error:', err);
     sourceCode.value = originalSourceCode.value
+  }
+}
+
+function openURL(url: string) {
+  if (window.utools) {
+    window.utools.shellOpenExternal(url);
   }
 }
 
