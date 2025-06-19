@@ -4,12 +4,12 @@
       <MonacoEditor ref="editor" :source-code="sourceCode" />
     </main>
     <footer>
-      <div class="flex-none h-12 flex items-center justify-between w-full bg-gray-200 gap-1 p-1">
+      <div class="flex-none h-12 flex items-center justify-between w-full gap-1 p-1">
         <Button id="pasteReplace" icon="icon-[tabler--help]" as="a" link v-tooltip.top="'JSON Path 文档'"
           href="https://github.com/JSONPath-Plus/JSONPath" target="_blank"
           @click="openURL('https://github.com/JSONPath-Plus/JSONPath')" />
-        <input class="flex-auto px-2 py-1 border border-gray-300 bg-white rounded" type="text" placeholder="$.<key>"
-          v-model="jsonPathFilter" @change="filterJson" @input="filterJson" />
+        <InputText class="flex-auto px-2 py-1 border rounded" type="text" placeholder="$.<key>" v-model="jsonPathFilter"
+          @change="filterJson" @input="filterJson" />
         <Button id="pasteReplace" icon="icon-[fluent-mdl2--paste-as-code]" rounded v-tooltip.top="'替换复制'"
           @click="pasteReplace" />
         <Button id="formatJSON" icon="icon-[tabler--braces] w-6 h-6" rounded v-tooltip.top="'格式化'"

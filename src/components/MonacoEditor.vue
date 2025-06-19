@@ -14,14 +14,31 @@ const props = defineProps<{
 const monacoNode = useTemplateRef<HTMLDivElement>('monacoNode');
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 
+
+window.matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', ({ matches }) => {
+    if (matches) {
+      if (editor) {
+        monaco.editor.setTheme('vs-dark');
+      }
+    } else {
+      if (editor) {
+        monaco.editor.setTheme('vs');
+      }
+    }
+  })
+
 onMounted(() => {
   if (monacoNode.value) {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
     editor = monaco.editor.create(monacoNode.value, {
       value: props.sourceCode || '',
       language: 'json',
       automaticLayout: true,
       placeholder: 'Enter JSON here...',
       formatOnPaste: true,
+      theme: isDark ? 'vs-dark' : 'vs',
     });
 
     editor.onDidPaste((_e) => {
@@ -34,7 +51,7 @@ onMounted(() => {
 });
 
 onUpdated(() => {
-  //console.log('Editor updated, checking for content change');
+  console.log('Editor updated, checking for content change');
   if (editor && props.sourceCode !== editor.getValue()) {
     editor.setValue(props.sourceCode);
   }
