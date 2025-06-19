@@ -26,15 +26,14 @@ export default defineConfig({
     },
   },
   build: {
-    minify: false,
+    //minify: false,
     rollupOptions: {
       output: {
-        // manualChunks(id) {
-        //   console.log('Chunking file:', id);
-        //   if (id.includes('monaco')) {
-        //     return 'monaco'
-        //   }
-        // },
+        manualChunks(id) {
+          if (id.includes('monaco')) {
+            return 'monaco'
+          }
+        },
         advancedChunks: {
           groups: [
             {

@@ -1,3 +1,5 @@
+import * as YAML from 'yaml'
+//@ts-ignore
 import JSON5 from 'json5'
 
 
@@ -14,8 +16,22 @@ export interface toJSON {
  * @throws Will throw an error if the input is not a valid JSON string
  */
 function jsonPretty(jsonText: string): string {
-  const jsonObject = JSON5.parse(jsonText)
-  return JSON.stringify(jsonObject, null, 2)
+
+  const parsers = [
+    JSON.parse,
+    JSON5.parse,
+    YAML.parse,
+  ]
+  for (const parser of parsers) {
+    try {
+      //@ts-ignore
+      const jsonObject = parser(jsonText)
+      return JSON.stringify(jsonObject, null, 2)
+    } catch {
+      // continue to the next parser
+    }
+  }
+  return jsonText
 }
 
 export class StringToJSON implements toJSON {
@@ -24,12 +40,12 @@ export class StringToJSON implements toJSON {
       throw new Error('Input must be a string')
     }
     const stringSigns = ['"', "'", '`'];
-    const jsonSings = ['{', '['];
+    const jsonSings = ['{', '[', ':'];
     const isQuoted = stringSigns.some(sign => data.startsWith(sign) && data.endsWith(sign))
     if (isQuoted) {
       // convert to a valid JSON string
       data = JSON5.parse(data)
-    } else if (!jsonSings.some(sign => data.includes(sign))) {
+    } else if (data.length > 20 && !jsonSings.some(sign => data.includes(sign))) {
       // maybe a base64 string, try to decode it
       try {
         data = atob(data)

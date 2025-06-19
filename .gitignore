@@ -31,3 +31,4 @@ coverage
 
 bun.lock
 *.bak
+dev

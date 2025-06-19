@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { JSONPath } from 'jsonpath-plus';
 import MonacoEditor from './components/MonacoEditor.vue';
-import { base64FromJson, htmlNestedFromJson, htmlPlainFromJson, javaScriptFromJson, jsonFromJson, oneLineFromJson, quotedMultiLineFromJson, quotedOneLineFromJson } from './utils/fromJson';
+import { base64FromJson, htmlNestedFromJson, htmlPlainFromJson, javaScriptFromJson, jsonFromJson, oneLineFromJson, quotedMultiLineFromJson, quotedOneLineFromJson, yamlFromJson } from './utils/fromJson';
 import { StringToJSON } from './utils/toJson';
 import './workers/monaco'
 
@@ -71,6 +71,11 @@ const copyActions = [
     label: 'Base64',
     icon: 'icon-[tabler--a-b]',
     command: () => copyJSON(base64FromJson)
+  },
+  {
+    label: 'YAML',
+    icon: 'icon-[devicon-plain--yaml]',
+    command: () => copyJSON(yamlFromJson)
   },
   {
     label: 'Javascript',
@@ -116,6 +121,17 @@ const copyActions = [
     label: 'Excel(多级表头)',
     icon: 'icon-[tabler--file-spreadsheet]',
     command: () => copyJSON(htmlNestedFromJson, 'text/html')
+  },
+  {
+    label: '更多格式',
+    icon: 'icon-[tabler--dots]',
+    command: () => {
+      if (window.utools) {
+        window.utools.shellOpenExternal('https://transform.tools/')
+      } else {
+        window.open('https://transform.tools/', '_blank');
+      }
+    }
   }
 ]
 

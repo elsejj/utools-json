@@ -1,4 +1,6 @@
+//@ts-ignore
 import JSON5 from 'json5'
+import * as YAML from 'yaml';
 import { jsonToTable, plainHeadersToNested } from './tableJson';
 
 export function oneLineFromJson(jsonText: string): string {
@@ -30,6 +32,11 @@ export function javaScriptFromJson(jsonText: string): string {
 export function jsonFromJson(jsonText: string): string {
   const jsonObject = JSON5.parse(jsonText);
   return JSON.stringify(jsonObject, null, 2);
+}
+
+export function yamlFromJson(jsonText: string): string {
+  const jsonObject = JSON5.parse(jsonText);
+  return YAML.stringify(jsonObject, null, 2);
 }
 
 export function htmlPlainFromJson(jsonText: string): string {

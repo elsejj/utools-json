@@ -1,64 +1,22 @@
 import * as monaco from 'monaco-editor';
 import { StringToJSON } from '@/utils/toJson';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+// import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+// import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+// import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
-// // @ts-ignore
-// import jsonURL from 'monaco-editor/esm/vs/language/json/json.worker?url';
-// // @ts-ignore
-// import editURL from 'monaco-editor/esm/vs/editor/editor.worker?url';
 
-// self.MonacoEnvironment = {
-//   getWorker(workId: any, label: string) {
-//     console.log('Creating Monaco worker for label:', label, workId);
-//     try {
-//       if (label === 'json') {
-//         return new Worker(jsonURL, { type: 'module' });
-//       }
-//       return new Worker(editURL, { type: 'module' });
-//     } catch (error) {
-//       console.error('Error creating Monaco worker:', error);
-//       throw error;
-//     }
-//   }
-// };
 
+// @ts-ignore
 self.MonacoEnvironment = {
-  getWorker: function (_workerId, label) {
-    const getWorkerModule = (moduleUrl: string, label: string) => {
-      //@ts-ignore
-      return new Worker(self.MonacoEnvironment.getWorkerUrl(moduleUrl), {
-        name: label,
-        type: 'module'
-      });
-    };
-
-    switch (label) {
-      case 'json':
-        return getWorkerModule('/monaco-editor/esm/vs/language/json/json.worker?worker', label);
-      case 'css':
-      case 'scss':
-      case 'less':
-        return getWorkerModule('/monaco-editor/esm/vs/language/css/css.worker?worker', label);
-      case 'html':
-      case 'handlebars':
-      case 'razor':
-        return getWorkerModule('/monaco-editor/esm/vs/language/html/html.worker?worker', label);
-      case 'typescript':
-      case 'javascript':
-        return getWorkerModule('/monaco-editor/esm/vs/language/typescript/ts.worker?worker', label);
-      default:
-        return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker?worker', label);
+  getWorker(_: any, label: string) {
+    if (label === 'json') {
+      return new jsonWorker();
     }
+    return new editorWorker();
   }
 };
-
-// self.MonacoEnvironment = {
-//   getWorkerUrl(_moduleId, label) {
-//     if (label === 'json') {
-//       return new URL('monaco-editor/esm/vs/language/json/json.worker.js', import.meta.url).toString();
-//     }
-//     return new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url).toString();
-//   }
-// }
 
 
 monaco.languages.json.jsonDefaults.setModeConfiguration({
@@ -87,7 +45,6 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
 
 monaco.languages.registerDocumentFormattingEditProvider('json', {
   provideDocumentFormattingEdits(model) {
-    console.log('Formatting JSON document:', model.uri.toString());
     return [
       {
         range: model.getFullModelRange(),
@@ -99,7 +56,6 @@ monaco.languages.registerDocumentFormattingEditProvider('json', {
 
 monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
   provideDocumentRangeFormattingEdits(model, range) {
-    console.log('Formatting JSON range:', model.uri.toString(), range);
     return [
       {
         range: range,
@@ -108,7 +64,6 @@ monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
     ]
   },
   provideDocumentRangesFormattingEdits(model, ranges, options, token) {
-    console.log('Formatting JSON ranges:', model.uri.toString(), ranges);
     return ranges.map(range => {
       return {
         range: range,
