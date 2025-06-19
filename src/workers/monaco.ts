@@ -45,10 +45,12 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
 
 monaco.languages.registerDocumentFormattingEditProvider('json', {
   provideDocumentFormattingEdits(model) {
+    const formatted = new StringToJSON().toJSON(model.getValue());
+    navigator.clipboard.writeText(formatted);
     return [
       {
         range: model.getFullModelRange(),
-        text: new StringToJSON().toJSON(model.getValue())
+        text: formatted
       }
     ]
   }
@@ -56,10 +58,12 @@ monaco.languages.registerDocumentFormattingEditProvider('json', {
 
 monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
   provideDocumentRangeFormattingEdits(model, range) {
+    const formatted = new StringToJSON().toJSON(model.getValueInRange(range));
+    navigator.clipboard.writeText(formatted);
     return [
       {
         range: range,
-        text: new StringToJSON().toJSON(model.getValueInRange(range))
+        text: formatted
       }
     ]
   },

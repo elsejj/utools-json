@@ -156,6 +156,9 @@ async function pasteReplace() {
   }
   const jsonBody = new StringToJSON().toJSON(text)
   sourceCode.value = jsonBody;
+
+  // write formatted JSON back to clipboard
+  await navigator.clipboard.writeText(jsonBody);
 }
 
 async function copyJSON(processor?: (text: string) => string, mimetype?: string): Promise<string> {
