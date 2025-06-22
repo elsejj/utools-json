@@ -76,3 +76,36 @@ monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
     });
   },
 });
+
+
+// monaco.languages.registerHoverProvider('json', {
+//   provideHover(model, position) {
+//     const word = model.getWordAtPosition(position);
+//     console.log('word', word, position);
+//     if (!word) {
+//       return null;
+//     }
+//     const value = model.getValueInRange({
+//       startLineNumber: position.lineNumber,
+//       startColumn: word.startColumn,
+//       endLineNumber: position.lineNumber,
+//       endColumn: word.endColumn
+//     });
+//     try {
+//       const json = new StringToJSON().toJSON(value);
+//       return {
+//         range: {
+//           startLineNumber: position.lineNumber,
+//           startColumn: word.startColumn,
+//           endLineNumber: position.lineNumber,
+//           endColumn: word.endColumn
+//         },
+//         contents: [
+//           { value: `\`\`\`json\n${json}\n\`\`\`` }
+//         ]
+//       };
+//     } catch (e) {
+//       return null;
+//     }
+//   }
+// });

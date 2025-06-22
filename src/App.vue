@@ -4,7 +4,7 @@
       <MonacoEditor ref="editor" :source-code="sourceCode" />
     </main>
     <footer>
-      <div class="flex-none h-12 flex items-center justify-between w-full gap-1 p-1">
+      <div class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2">
         <Button id="pasteReplace" icon="icon-[tabler--help]" as="a" link v-tooltip.top="'JSON Path 文档'"
           href="https://github.com/JSONPath-Plus/JSONPath" target="_blank"
           @click="openURL('https://github.com/JSONPath-Plus/JSONPath')" />

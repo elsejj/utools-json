@@ -47,6 +47,7 @@ onMounted(() => {
         editor?.trigger('editor', 'editor.action.formatDocument', {});
       }, 100);
     })
+
   }
 });
 

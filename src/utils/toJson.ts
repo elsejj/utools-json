@@ -9,6 +9,18 @@ export interface toJSON {
 }
 
 
+function reOrderKeys(key: string, obj: any): any {
+  if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+    const orderedObj: any = {};
+    const keys = Object.keys(obj).sort();
+    for (const key of keys) {
+      orderedObj[key] = obj[key];
+    }
+    return orderedObj;
+  }
+  return obj;
+}
+
 /**
  * Converts a JSON string to a pretty-printed JSON string
  * @param jsonText The JSON string to format
@@ -26,7 +38,7 @@ function jsonPretty(jsonText: string): string {
     try {
       //@ts-ignore
       const jsonObject = parser(jsonText)
-      return JSON.stringify(jsonObject, null, 2)
+      return JSON.stringify(jsonObject, reOrderKeys, 2)
     } catch {
       // continue to the next parser
     }
