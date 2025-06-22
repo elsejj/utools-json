@@ -39,6 +39,8 @@ onMounted(() => {
       placeholder: 'Enter JSON here...',
       formatOnPaste: true,
       theme: isDark ? 'vs-dark' : 'vs',
+      fontSize: 13,
+      wordWrap: 'on'
     });
 
     editor.onDidPaste((_e) => {
