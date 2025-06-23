@@ -127,9 +127,9 @@ const copyActions = [
     icon: 'icon-[tabler--dots]',
     command: () => {
       if (window.utools) {
-        window.utools.shellOpenExternal('https://transform.tools/')
+        window.utools.shellOpenExternal('https://app.quicktype.io/')
       } else {
-        window.open('https://transform.tools/', '_blank');
+        window.open('https://app.quicktype.io/', '_blank');
       }
     }
   }
