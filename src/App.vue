@@ -1,7 +1,8 @@
 <template>
   <div class="w-full h-full flex flex-col">
     <main class="flex-auto">
-      <MonacoEditor ref="editor" :source-code="sourceCode" />
+      <MonacoDiffEditor v-if="diffMode" ref="editor" v-model="sourceCode" />
+      <MonacoEditor v-else ref="editor" v-model="sourceCode" />
     </main>
     <footer>
       <div class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2">
@@ -10,16 +11,18 @@
           @click="openURL('https://github.com/JSONPath-Plus/JSONPath')" />
         <InputText class="flex-auto px-2 py-1 border rounded" type="text" placeholder="$.<key>" v-model="jsonPathFilter"
           @change="filterJson" @input="filterJson" />
-        <Button id="pasteReplace" icon="icon-[fluent-mdl2--paste-as-code]" rounded v-tooltip.top="'替换复制'"
-          @click="pasteReplace" />
-        <Button id="formatJSON" icon="icon-[tabler--braces] w-6 h-6" rounded v-tooltip.top="'格式化'"
+        <Button id="pasteReplace" icon="icon-[fluent-mdl2--paste-as-code]" rounded
+          v-tooltip.top="'替换复制\n(Ctrl+Shift+V)'" @click="pasteReplace" />
+        <Button id="formatJSON" icon="icon-[tabler--braces] w-6 h-6" rounded v-tooltip.top="'格式化\n(Shift+Alt+F)'"
           @click="triggerEditorAction('editor.action.formatDocument')" />
-        <Button id="collapseAll" icon="icon-[tabler--arrows-diagonal-minimize]" rounded v-tooltip.top="'折叠所有'"
-          @click="triggerEditorAction('editor.foldAll')" />
-        <Button id="expandAll" icon="icon-[tabler--arrows-move-vertical]" rounded v-tooltip.top="'展开所有'"
-          @click="triggerEditorAction('editor.unfoldAll')" />
-        <SplitButton id="copyJSON" icon="icon-[fluent-mdl2--copy]" rounded :model="copyActions" v-tooltip.top="'复制'"
-          @click="copyJSON()" />
+        <Button id="collapseAll" icon="icon-[tabler--arrows-diagonal-minimize]" rounded
+          v-tooltip.top="'折叠所有\n(Ctrl+K Ctrl+0)'" @click="triggerEditorAction('editor.foldAll')" />
+        <Button id="expandAll" icon="icon-[tabler--arrows-move-vertical]" rounded
+          v-tooltip.top="'展开所有\n(Ctrl+K Ctrl+J)'" @click="triggerEditorAction('editor.unfoldAll')" />
+        <SplitButton id="copyJSON" icon="icon-[fluent-mdl2--copy]" rounded :model="copyActions"
+          v-tooltip.top="'复制\n(Ctrl+C)'" @click="copyJSON()" />
+        <Button id="toggleDiff" icon="icon-[tabler--arrows-diff]" rounded v-tooltip.top="'切换对比模式'"
+          @click="toggleDiffMode" />
       </div>
     </footer>
   </div>
@@ -36,10 +39,11 @@ import { ref } from 'vue';
 
 const sourceCode = ref(``); // Default JSON content
 
+const diffMode = ref(false); // Track if in diff mode
+
 
 if (window.utools) {
   window.utools.onPluginEnter((action) => {
-    console.log('Plugin entered:', action);
     if (typeof action.payload === 'string' && action.payload.length > 5) {
       try {
         sourceCode.value = new StringToJSON().toJSON(action.payload) || '';
@@ -140,7 +144,12 @@ const originalSourceCode = ref('')
 const jsonPathFilter = ref(''); // JSON Path filter input
 
 
-const editor = ref<InstanceType<typeof MonacoEditor> | null>(null);
+interface IMonacoEditor {
+  triggerEditorAction(action: string, payload?: any): void;
+}
+
+
+const editor = ref<IMonacoEditor | null>(null);
 
 
 function triggerEditorAction(action: string, payload: any = {}) {
@@ -162,7 +171,7 @@ async function pasteReplace() {
 }
 
 async function copyJSON(processor?: (text: string) => string, mimetype?: string): Promise<string> {
-  const text = editor.value?.getText() || '';
+  const text = sourceCode.value || ''
   if (!text) {
     return '';
   }
@@ -208,7 +217,7 @@ function filterJson() {
   }
   if (!originalSourceCode.value) {
     // first time entering filter mode, save the original source code
-    originalSourceCode.value = editor.value?.getText() || '';
+    originalSourceCode.value = sourceCode.value || '';
   }
 
   try {
@@ -234,5 +243,11 @@ function openURL(url: string) {
     window.utools.shellOpenExternal(url);
   }
 }
+
+
+function toggleDiffMode() {
+  diffMode.value = !diffMode.value;
+}
+
 
 </script>

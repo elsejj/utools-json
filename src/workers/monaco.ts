@@ -19,6 +19,24 @@ self.MonacoEnvironment = {
 };
 
 
+monaco.editor.addKeybindingRules([
+  {
+    keybinding: monaco.KeyMod.Alt | monaco.KeyCode.Equal,
+    command: 'editor.action.fontZoomIn',
+    when: 'editorTextFocus'
+  },
+  {
+    keybinding: monaco.KeyMod.Alt | monaco.KeyCode.Minus,
+    command: 'editor.action.fontZoomOut',
+    when: 'editorTextFocus'
+  },
+  {
+    keybinding: monaco.KeyMod.Alt | monaco.KeyCode.Digit0,
+    command: 'editor.action.fontZoomReset',
+    when: 'editorTextFocus'
+  }
+]);
+
 monaco.languages.json.jsonDefaults.setModeConfiguration({
   documentFormattingEdits: false,
   documentRangeFormattingEdits: false,
