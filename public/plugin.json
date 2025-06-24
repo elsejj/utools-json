@@ -38,5 +38,5 @@
   "description": "一个全能的JSON处理工具，添加了官方JSON编辑器所缺失的功能",
   "author": "Good",
   "homepage": "https://github.com/elsejj/utools-json",
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
