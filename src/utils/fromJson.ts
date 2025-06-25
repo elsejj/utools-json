@@ -39,10 +39,40 @@ export function yamlFromJson(jsonText: string): string {
   return YAML.stringify(jsonObject, null, 2);
 }
 
+
+const HTML_PREFIX = `
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<style>
+<!--table
+.xl64
+	{mso-number-format:"\@";
+	white-space:normal;}
+.xl65
+	{mso-number-format:"0_ ";
+	white-space:normal;}
+-->
+</style>
+</head>
+<body>
+`
+const HTML_SUFFIX = `
+</body>
+</html>
+`
+
 export function htmlPlainFromJson(jsonText: string): string {
   const jsonObject = JSON5.parse(jsonText);
   const table = jsonToTable(jsonObject);
   const lines = [
+    HTML_PREFIX,
     '<table class="json_table_v000">',
   ]
   lines.push('<tr>');
@@ -58,20 +88,36 @@ export function htmlPlainFromJson(jsonText: string): string {
       if (cell === null) {
         continue
       }
+      let cellClass = ''
+      if (typeof cell === 'number') {
+        if (Number.isInteger(cell)) {
+          const text = cell.toString();
+          if (text.length > 10) {
+            cellClass = 'xl65';
+          }
+        }
+      } else if (typeof cell === 'string') {
+        // Check if the string is a integer
+        if (cell.length > 10 && /^\d+$/.test(cell)) {
+          cellClass = 'xl64';
+        }
+      }
+
       let rowSpan = 1;
       while (row + rowSpan < table.cells.length && table.cells[row + rowSpan][col] === null) {
         rowSpan++;
       }
       if (rowSpan > 1) {
-        lines.push(`<td rowspan="${rowSpan}">${cell}</td>`);
+        lines.push(`<td rowspan="${rowSpan}" class="${cellClass}">${cell}</td>`);
       } else {
-        lines.push(`<td>${cell}</td>`);
+        lines.push(`<td class="${cellClass}">${cell}</td>`);
       }
     }
     lines.push('</tr>');
   }
 
   lines.push('</table>');
+  lines.push(HTML_SUFFIX);
   return lines.join('\n');
 }
 
