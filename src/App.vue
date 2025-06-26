@@ -170,23 +170,14 @@ async function pasteReplace() {
   await navigator.clipboard.writeText(jsonBody);
 }
 
-async function copyJSON(processor?: (text: string) => string, mimetype?: string): Promise<string> {
+async function copyJSON(processor?: (text: string) => string, _mimetype?: string): Promise<string> {
   const text = sourceCode.value || ''
   if (!text) {
     return '';
   }
   try {
     const processedText = processor ? processor(text) : text;
-    if (mimetype) {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          [mimetype]: new Blob([processedText], { type: mimetype })
-        })
-      ]);
-    } else {
-      await navigator.clipboard.writeText(processedText);
-    }
-    //console.log('Copied JSON to clipboard:', processedText);
+    await navigator.clipboard.writeText(processedText);
     return processedText;
   } catch (err) {
     console.error('Failed to copy JSON:', err);

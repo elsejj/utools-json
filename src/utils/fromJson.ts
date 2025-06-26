@@ -126,6 +126,7 @@ export function htmlNestedFromJson(jsonText: string): string {
   const table = jsonToTable(jsonObject);
 
   const lines = [
+    HTML_PREFIX,
     '<table class="json_table_v000">',
   ]
   const nestedHeaders = plainHeadersToNested(table.headers);
@@ -167,19 +168,34 @@ export function htmlNestedFromJson(jsonText: string): string {
       if (cell === null) {
         continue
       }
+      let cellClass = ''
+      if (typeof cell === 'number') {
+        if (Number.isInteger(cell)) {
+          const text = cell.toString();
+          if (text.length > 10) {
+            cellClass = 'xl65';
+          }
+        }
+      } else if (typeof cell === 'string') {
+        // Check if the string is a integer
+        if (cell.length > 10 && /^\d+$/.test(cell)) {
+          cellClass = 'xl64';
+        }
+      }
       let rowSpan = 1;
       while (row + rowSpan < table.cells.length && table.cells[row + rowSpan][col] === null) {
         rowSpan++;
       }
       if (rowSpan > 1) {
-        lines.push(`<td rowspan="${rowSpan}">${cell}</td>`);
+        lines.push(`<td rowspan="${rowSpan}" class="${cellClass}">${cell}</td>`);
       } else {
-        lines.push(`<td>${cell}</td>`);
+        lines.push(`<td class="${cellClass}">${cell}</td>`);
       }
     }
     lines.push('</tr>');
   }
 
   lines.push('</table>');
+  lines.push(HTML_SUFFIX);
   return lines.join('\n');
 }
