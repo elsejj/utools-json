@@ -8,8 +8,10 @@ This project is a web application that allows users use 'monaco' editor to edit 
 The project is built using the following technologies:
 
 - Vue.js 3 for the frontend framework
-- PrimeVue 4 for UI components
+- PrimeVue 4 for UI components, we had use auto-import feature, so you don't need to import components manually
 - Tailwindcss 4 for styling
 - Vite.js for the build tool
+- Pinia for state management, state file is located at `src/composables/', with a `use` prefix
+- components are located at `src/components/`
 - TypeScript as the programming language
 - Monaco Editor for the code editor

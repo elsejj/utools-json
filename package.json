@@ -14,6 +14,7 @@
     "json5": "^2.2.3",
     "jsonpath-plus": "^10.3.0",
     "monaco-editor": "^0.52.2",
+    "pinia": "^3.0.3",
     "primevue": "^4.3.5",
     "tailwindcss": "^4.1.10",
     "tailwindcss-primeui": "^0.6.1",

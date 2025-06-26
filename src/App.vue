@@ -23,6 +23,11 @@
           v-tooltip.top="'复制\n(Ctrl+C)'" @click="copyJSON()" />
         <Button id="toggleDiff" icon="icon-[tabler--arrows-diff]" rounded v-tooltip.top="'切换对比模式'"
           @click="toggleDiffMode" />
+        <Button id="editorSetting" icon="icon-[tabler--settings]" rounded v-tooltip.top="'编辑器设置'"
+          @click="showSettingPanel($event)" />
+        <Popover ref="settingPanel">
+          <EditorSetting />
+        </Popover>
       </div>
     </footer>
   </div>
@@ -31,24 +36,38 @@
 <script setup lang="ts">
 import { JSONPath } from 'jsonpath-plus';
 import MonacoEditor from './components/MonacoEditor.vue';
+import MonacoDiffEditor from './components/MonacoDiffEditor.vue';
+import EditorSetting from './components/EditorSetting.vue';
 import { base64FromJson, htmlNestedFromJson, htmlPlainFromJson, javaScriptFromJson, jsonFromJson, oneLineFromJson, quotedMultiLineFromJson, quotedOneLineFromJson, yamlFromJson } from './utils/fromJson';
 import { StringToJSON } from './utils/toJson';
 import './workers/monaco'
 
 import { ref } from 'vue';
+import { Popover } from 'primevue';
+
+interface IMonacoEditor {
+  triggerEditorAction(action: string, payload?: any): void;
+  setSourceCode(code: string): void;
+}
 
 const sourceCode = ref(``); // Default JSON content
-
 const diffMode = ref(false); // Track if in diff mode
-
+const editor = ref<IMonacoEditor | null>(null);
+// in filter mode, this is the original source code
+const originalSourceCode = ref('')
+const jsonPathFilter = ref(''); // JSON Path filter input
+const settingPanel = ref();
 
 if (window.utools) {
   window.utools.onPluginEnter((action) => {
     if (typeof action.payload === 'string' && action.payload.length > 5) {
       try {
         sourceCode.value = new StringToJSON().toJSON(action.payload) || '';
+        if (editor.value) {
+          editor.value.setSourceCode(sourceCode.value);
+        }
       } catch (error) {
-        sourceCode.value = ''
+        sourceCode.value = action.payload; // Fallback to raw payload if conversion fails
       }
     }
   });
@@ -139,23 +158,15 @@ const copyActions = [
   }
 ]
 
-// in filter mode, this is the original source code
-const originalSourceCode = ref('')
-const jsonPathFilter = ref(''); // JSON Path filter input
-
-
-interface IMonacoEditor {
-  triggerEditorAction(action: string, payload?: any): void;
-}
-
-
-const editor = ref<IMonacoEditor | null>(null);
-
-
 function triggerEditorAction(action: string, payload: any = {}) {
   if (editor.value) {
     editor.value.triggerEditorAction(action, payload);
   }
+}
+
+
+function showSettingPanel(event: Event) {
+  settingPanel.value.toggle(event);
 }
 
 async function pasteReplace() {
