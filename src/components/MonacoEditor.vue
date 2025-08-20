@@ -13,7 +13,6 @@ import { useEditorSetting } from '@/composables/useEditorSetting'
 
 const monacoNode = useTemplateRef<HTMLDivElement>('monacoNode');
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
-let editorChangeListener: monaco.IDisposable | null = null;
 const mediaQueryAborter = new AbortController();
 const sourceCode = defineModel({
   type: String,
