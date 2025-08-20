@@ -9,30 +9,30 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@primeuix/themes": "^1.1.1",
-    "@tailwindcss/vite": "^4.1.10",
+    "@primeuix/themes": "^1.2.3",
+    "@tailwindcss/vite": "^4.1.12",
     "json5": "^2.2.3",
     "jsonpath-plus": "^10.3.0",
     "monaco-editor": "^0.52.2",
     "pinia": "^3.0.3",
-    "primevue": "^4.3.5",
-    "tailwindcss": "^4.1.10",
+    "primevue": "^4.3.7",
+    "tailwindcss": "^4.1.12",
     "tailwindcss-primeui": "^0.6.1",
-    "vue": "^3.5.13",
-    "yaml": "^2.8.0"
+    "vue": "^3.5.18",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
-    "@iconify-json/devicon-plain": "^1.2.27",
+    "@iconify-json/devicon-plain": "^1.2.38",
     "@iconify-json/fluent-mdl2": "^1.2.1",
-    "@iconify-json/tabler": "^1.2.19",
+    "@iconify-json/tabler": "^1.2.22",
     "@iconify/tailwind4": "^1.0.6",
     "@iconify/vue": "^5.0.0",
-    "@primevue/auto-import-resolver": "^4.3.5",
-    "@types/bun": "^1.2.16",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "unplugin-vue-components": "^28.7.0",
-    "utools-api-types": "^7.1.0",
-    "vite": "^6.3.5",
-    "vite-plugin-vue-devtools": "^7.7.2"
+    "@primevue/auto-import-resolver": "^4.3.7",
+    "@types/bun": "^1.2.20",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "unplugin-vue-components": "^29.0.0",
+    "utools-api-types": "^7.2.0",
+    "vite": "^7.1.3",
+    "vite-plugin-vue-devtools": "^8.0.0"
   }
 }
