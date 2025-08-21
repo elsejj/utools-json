@@ -32,7 +32,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "unplugin-vue-components": "^29.0.0",
     "utools-api-types": "^7.2.0",
-    "vite": "^7.1.3",
+    "vite": "npm:rolldown-vite@latest",
     "vite-plugin-vue-devtools": "^8.0.0"
   }
 }
