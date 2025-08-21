@@ -8,10 +8,11 @@ export interface EditorSetting {
   theme: string
 }
 
-const LOCAL_KEY = 'json_ultra_editor'
+const LOCAL_SETTING_KEY = 'json_ultra_editor_setting'
+const LOCAL_TAB_KEY = 'json_ultra_editor_tab'
 
 function loadSetting(): EditorSetting {
-  const raw = localStorage.getItem(LOCAL_KEY)
+  const raw = localStorage.getItem(LOCAL_SETTING_KEY)
   if (raw) {
     try {
       return JSON.parse(raw)
@@ -27,15 +28,33 @@ function loadSetting(): EditorSetting {
 }
 
 function saveSetting(setting: EditorSetting) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(setting))
+  localStorage.setItem(LOCAL_SETTING_KEY, JSON.stringify(setting))
 }
+
 
 export const useEditorSetting = defineStore('editorSetting', () => {
   const setting = ref<EditorSetting>(loadSetting())
 
   watch(setting, (val) => saveSetting(val), { deep: true })
 
+  function loadTabs(): any {
+    const raw = localStorage.getItem(LOCAL_TAB_KEY)
+    if (raw) {
+      try {
+        return JSON.parse(raw)
+      } catch {
+        return null
+      }
+    }
+  }
+
+  function saveTabs(tabs: any) {
+    localStorage.setItem(LOCAL_TAB_KEY, JSON.stringify(tabs))
+  }
+
   return {
     setting,
+    loadTabs,
+    saveTabs
   }
 })

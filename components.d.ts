@@ -12,6 +12,7 @@ declare module 'vue' {
     EditorSetting: typeof import('./src/components/EditorSetting.vue')['default']
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
+    JsonEditor: typeof import('./src/components/JsonEditor.vue')['default']
     MonacoDiffEditor: typeof import('./src/components/MonacoDiffEditor.vue')['default']
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     SplitButton: typeof import('primevue/splitbutton')['default']

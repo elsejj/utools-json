@@ -1,255 +1,123 @@
 <template>
   <div class="w-full h-full flex flex-col">
-    <main class="flex-auto">
-      <MonacoDiffEditor v-if="diffMode" ref="editor" v-model="sourceCode" />
-      <MonacoEditor v-else ref="editor" v-model="sourceCode" />
-    </main>
-    <footer>
-      <div class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2">
-        <Button id="pasteReplace" icon="icon-[tabler--help]" as="a" link v-tooltip.top="'JSON Path 文档'"
-          href="https://github.com/JSONPath-Plus/JSONPath" target="_blank"
-          @click="openURL('https://github.com/JSONPath-Plus/JSONPath')" />
-        <InputText class="flex-auto px-2 py-1 border rounded" type="text" placeholder="$.<key>" v-model="jsonPathFilter"
-          @change="filterJson" @input="filterJson" />
-        <Button id="pasteReplace" icon="icon-[fluent-mdl2--paste-as-code]" rounded
-          v-tooltip.top="'替换复制\n(Ctrl+Shift+V)'" @click="pasteReplace" />
-        <Button id="formatJSON" icon="icon-[tabler--braces] w-6 h-6" rounded v-tooltip.top="'格式化\n(Shift+Alt+F)'"
-          @click="triggerEditorAction('editor.action.formatDocument')" />
-        <Button id="collapseAll" icon="icon-[tabler--arrows-diagonal-minimize]" rounded
-          v-tooltip.top="'折叠所有\n(Ctrl+K Ctrl+0)'" @click="triggerEditorAction('editor.foldAll')" />
-        <Button id="expandAll" icon="icon-[tabler--arrows-move-vertical]" rounded
-          v-tooltip.top="'展开所有\n(Ctrl+K Ctrl+J)'" @click="triggerEditorAction('editor.unfoldAll')" />
-        <SplitButton id="copyJSON" icon="icon-[fluent-mdl2--copy]" rounded :model="copyActions"
-          v-tooltip.top="'复制\n(Ctrl+C)'" @click="copyJSON()" />
-        <Button id="toggleDiff" icon="icon-[tabler--arrows-diff]" rounded v-tooltip.top="'切换对比模式'"
-          @click="toggleDiffMode" />
-        <Button id="editorSetting" icon="icon-[tabler--settings]" rounded v-tooltip.top="'编辑器设置'"
-          @click="showSettingPanel($event)" />
-        <Popover ref="settingPanel">
-          <EditorSetting />
-        </Popover>
+    <header class="flex-none border-b bg-surface p-2 flex items-center gap-2">
+      <div class="flex items-center gap-2">
+        <Button icon="icon-[tabler--plus]" size="small" rounded  @click="addTab()" v-tooltip.top="'新建标签'" />
       </div>
-    </footer>
+      <div class="flex-1 flex items-center gap-1 overflow-x-auto">
+        <template v-for="(tab, idx) in tabs" :key="tab.id">
+          <div :class="['px-3 py-1 rounded cursor-pointer flex items-center gap-2', activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent']"
+            @click="activateTab(idx)">
+            <span class="text-sm">{{ tab.title }}</span>
+            <Button icon="icon-[tabler--x] h-6" size="small" severity="danger" text @click.stop="closeTab(idx)" />
+          </div>
+        </template>
+      </div>
+    </header>
+
+    <main class="flex-auto">
+      <JsonEditor v-model="tabs[activeTab].content" ref="jsonEditor" />
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { JSONPath } from 'jsonpath-plus';
-import MonacoEditor from './components/MonacoEditor.vue';
-import MonacoDiffEditor from './components/MonacoDiffEditor.vue';
-import EditorSetting from './components/EditorSetting.vue';
-import { base64FromJson, htmlNestedFromJson, htmlPlainFromJson, javaScriptFromJson, jsonFromJson, oneLineFromJson, quotedMultiLineFromJson, quotedOneLineFromJson, yamlFromJson } from './utils/fromJson';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import JsonEditor from './components/JsonEditor.vue';
 import { StringToJSON } from './utils/toJson';
-import './workers/monaco'
+import { useEditorSetting } from './composables/useEditorSetting';
 
-import { ref } from 'vue';
-import { Popover } from 'primevue';
 
-interface IMonacoEditor {
-  triggerEditorAction(action: string, payload?: any): void;
-  setSourceCode(code: string): void;
-}
+const settings = useEditorSetting();
 
-const sourceCode = ref(``); // Default JSON content
-const diffMode = ref(false); // Track if in diff mode
-const editor = ref<IMonacoEditor | null>(null);
-// in filter mode, this is the original source code
-const originalSourceCode = ref('')
-const jsonPathFilter = ref(''); // JSON Path filter input
-const settingPanel = ref();
+if ((window as any).utools) {
+  (window as any).utools.onPluginEnter((action: any) => {
+    //console.log("onPluginEnter", action);
 
-if (window.utools) {
-  window.utools.onPluginEnter((action) => {
     if (typeof action.payload === 'string' && action.payload.length > 5) {
+      var content = action.payload;
       try {
-        sourceCode.value = new StringToJSON().toJSON(action.payload) || '';
-        if (editor.value) {
-          editor.value.setSourceCode(sourceCode.value);
+        content = new StringToJSON().toJSON(action.payload) || '';
+        if (tabs.value.length === 1 && tabs.value[0].content === '') {
+          tabs.value[0].content = content;
+          activateTab(0);
+        } else {
+          addTab(content);
         }
       } catch (error) {
-        sourceCode.value = action.payload; // Fallback to raw payload if conversion fails
       }
+    }else{
+      activateTab(tabs.value.length - 1);
     }
+    
+  });
+  (window as any).utools.onPluginOut(() => {
+    //console.log("onPluginOut");
+    settings.saveTabs(tabs.value);
   });
 }
 
-const copyActions = [
-  {
-    label: '单行',
-    icon: 'icon-[tabler--separator-horizontal]',
-    command: () => copyJSON(oneLineFromJson),
 
-  },
-  {
-    label: '转义字符串(多行)',
-    icon: 'icon-[tabler--blockquote]',
-    command: () => copyJSON(quotedMultiLineFromJson)
-  },
-  {
-    label: '转义字符串(单行)',
-    icon: 'icon-[tabler--quote]',
-    command: () => copyJSON(quotedOneLineFromJson)
-  },
-  {
-    label: 'Base64',
-    icon: 'icon-[tabler--a-b]',
-    command: () => copyJSON(base64FromJson)
-  },
-  {
-    label: 'YAML',
-    icon: 'icon-[devicon-plain--yaml]',
-    command: () => copyJSON(yamlFromJson)
-  },
-  {
-    label: 'Javascript',
-    icon: 'icon-[tabler--brand-javascript]',
-    command: () => copyJSON(javaScriptFromJson),
-  },
-  {
-    label: 'Python',
-    icon: 'icon-[tabler--brand-python]',
-    command: () => copyJSON(),
-  },
-  {
-    label: 'Rust',
-    icon: 'icon-[tabler--brand-rust]',
-    command: () => copyJSON((text) => {
-      return `json!(${jsonFromJson(text)})`
+type Tab ={
+  id: string;
+  title: string;
+  content: string;
+}
+
+const tabs = ref<Tab[]>([newTab()]);
+const activeTab = ref(0);
+const jsonEditor = ref<InstanceType<typeof JsonEditor> | null>(null);
+
+
+onMounted(() => {
+  //console.log("App mounted");
+  tabs.value = settings.loadTabs() || [
+    newTab()
+  ];
+});
+
+onUnmounted(() => {
+  //console.log("App unmounted");
+  settings.saveTabs(tabs.value);
+});
+
+
+function newTab(content: string = '') : Tab {
+  const now = new Date();
+  const yymmdd_hhmmss = `${now.getFullYear() % 100}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+
+  return { id: yymmdd_hhmmss, title: yymmdd_hhmmss, content };
+}
+
+function addTab(content: string = '') {
+  tabs.value.push(newTab(content));
+  activateTab(tabs.value.length - 1);
+}
+
+function activateTab(index: number) {
+  if (index >= 0 && index < tabs.value.length) {
+    //console.log("active tab", index, tabs.value[index])
+    activeTab.value = index;
+    if (jsonEditor.value) {
+      jsonEditor.value.setSourceCode(tabs.value[index]?.content || '');
     }
-    )
-  },
-  {
-    label: 'Go',
-    icon: 'icon-[tabler--brand-golang]',
-    command: async () => copyJSON((text) => {
-      return "`" + jsonFromJson(text) + "`"
-    })
-
-  },
-  {
-    label: 'C/C++',
-    icon: 'icon-[tabler--brand-cpp]',
-    command: () => copyJSON((text) => {
-      return text.split('\n')
-        .map(line => JSON.stringify(line))
-        .join("\n") + ";"
-    })
-  },
-  {
-    label: 'Excel(单表头)',
-    icon: 'icon-[tabler--file-spreadsheet]',
-    command: () => copyJSON(htmlPlainFromJson, 'text/html')
-  },
-  {
-    label: 'Excel(多级表头)',
-    icon: 'icon-[tabler--file-spreadsheet]',
-    command: () => copyJSON(htmlNestedFromJson, 'text/html')
-  },
-  {
-    label: '更多格式',
-    icon: 'icon-[tabler--dots]',
-    command: () => {
-      if (window.utools) {
-        window.utools.shellOpenExternal('https://app.quicktype.io/')
-      } else {
-        window.open('https://app.quicktype.io/', '_blank');
-      }
-    }
-  }
-]
-
-function triggerEditorAction(action: string, payload: any = {}) {
-  if (editor.value) {
-    editor.value.triggerEditorAction(action, payload);
+  }else{
+    console.log("inactive tab", index)
   }
 }
 
-
-function showSettingPanel(event: Event) {
-  settingPanel.value.toggle(event);
-}
-
-async function pasteReplace() {
-  const text = await navigator.clipboard.readText()
-  if (!text) {
+function closeTab(index: number) {
+  if (tabs.value.length === 1) {
+    // clear content instead of closing last tab
+    tabs.value[0].content = '';
+    activeTab.value = 0;
     return;
   }
-  const jsonBody = new StringToJSON().toJSON(text)
-  sourceCode.value = jsonBody;
-
-  // write formatted JSON back to clipboard
-  await navigator.clipboard.writeText(jsonBody);
-}
-
-async function copyJSON(processor?: (text: string) => string, _mimetype?: string): Promise<string> {
-  const text = sourceCode.value || ''
-  if (!text) {
-    return '';
-  }
-  try {
-    const processedText = processor ? processor(text) : text;
-    await navigator.clipboard.writeText(processedText);
-    return processedText;
-  } catch (err) {
-    console.error('Failed to copy JSON:', err);
-    return '';
+  tabs.value.splice(index, 1);
+  if (activeTab.value >= tabs.value.length) {
+    activateTab(tabs.value.length - 1);
+  }else{
+    activateTab(activeTab.value);
   }
 }
-
-
-function noEmptyValue(val: any): boolean {
-  if (val) {
-    if (Array.isArray(val)) {
-      return val.length > 0;
-    } else if (typeof val === 'object') {
-      return Object.keys(val).length > 0;
-    } else {
-      return true; // For strings and other types, just check if they are truthy
-    }
-  }
-  return false; // If the value is null, undefined, or empty, return false
-}
-
-function filterJson() {
-  if (!jsonPathFilter.value) {
-    sourceCode.value = originalSourceCode.value;
-    // indicate that we are not in filter mode
-    originalSourceCode.value = ''
-    return;
-  }
-  if (!originalSourceCode.value) {
-    // first time entering filter mode, save the original source code
-    originalSourceCode.value = sourceCode.value || '';
-  }
-
-  try {
-    const result = JSONPath({
-      path: jsonPathFilter.value.trim(),
-      json: JSON.parse(originalSourceCode.value)
-    })
-    //console.log('JSONPath result:', result);
-    if (noEmptyValue(result)) {
-      sourceCode.value = JSON.stringify(result, null, 2);
-    } else {
-      sourceCode.value = originalSourceCode.value;
-    }
-  }
-  catch (err) {
-    console.error('JSONPath error:', err);
-    sourceCode.value = originalSourceCode.value
-  }
-}
-
-function openURL(url: string) {
-  if (window.utools) {
-    window.utools.shellOpenExternal(url);
-  }
-}
-
-
-function toggleDiffMode() {
-  diffMode.value = !diffMode.value;
-}
-
-
 </script>
