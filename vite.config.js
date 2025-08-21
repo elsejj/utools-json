@@ -35,11 +35,26 @@ export default defineConfig({
           }
         },
         advancedChunks: {
+          minSize: 1024,
           groups: [
             {
               name: 'monaco',
-              test: 'monaco-editor',
+              test: '/node_modules[\\/]monaco-editor/',
             },
+            {
+              name: 'primevue',
+              test: 'primevue'
+            },
+            {
+              name: 'vue',
+              test: 'vue'
+            },
+            {
+              name: 'vendor',
+              test: (id) => {
+                return true;
+              },
+            }
           ],
         }
       },

@@ -42,8 +42,9 @@ import { base64FromJson, htmlNestedFromJson, htmlPlainFromJson, javaScriptFromJs
 import { StringToJSON } from '../utils/toJson';
 import '../workers/monaco'
 
-import { ref, watch } from 'vue';
+import { ref} from 'vue';
 import { Popover } from 'primevue';
+import { useEditorSetting } from '@/composables/useEditorSetting';
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -64,10 +65,8 @@ const editor = ref<IMonacoEditor | null>(null);
 const originalSourceCode = ref('');
 const jsonPathFilter = ref('');
 const settingPanel = ref();
+const settings = useEditorSetting();
 
-// watch(sourceCode, (newValue) => {
-//   console.log(`sourceCode changed: ${newValue}`);
-// });
 
 // watch(sourceCode, (v) => {
 //   emit('update:modelValue', v || '');
@@ -104,7 +103,7 @@ function showSettingPanel(event: Event) {
 async function pasteReplace() {
   const text = await navigator.clipboard.readText()
   if (!text) return;
-  const jsonBody = new StringToJSON().toJSON(text)
+  const jsonBody = new StringToJSON(settings.setting.sortKey).toJSON(text)
   sourceCode.value = jsonBody;
   await navigator.clipboard.writeText(jsonBody);
 }

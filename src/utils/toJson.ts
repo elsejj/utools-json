@@ -27,7 +27,7 @@ function reOrderKeys(key: string, obj: any): any {
  * @returns A pretty-printed JSON string
  * @throws Will throw an error if the input is not a valid JSON string
  */
-function jsonPretty(jsonText: string): string {
+function jsonPretty(jsonText: string, sortKey: boolean = true): string {
 
   const parsers = [
     JSON.parse,
@@ -38,7 +38,8 @@ function jsonPretty(jsonText: string): string {
     try {
       //@ts-ignore
       const jsonObject = parser(jsonText)
-      return JSON.stringify(jsonObject, reOrderKeys, 2)
+      const replacer = sortKey ? reOrderKeys : undefined
+      return JSON.stringify(jsonObject, replacer, 2)
     } catch {
       // continue to the next parser
     }
@@ -47,6 +48,13 @@ function jsonPretty(jsonText: string): string {
 }
 
 export class StringToJSON implements toJSON {
+
+  private _sortKey: boolean
+
+  constructor(sortKey: boolean) {
+    this._sortKey = sortKey
+  }
+
   toJSON(data: any): string {
     if (typeof data !== 'string') {
       throw new Error('Input must be a string')
@@ -67,7 +75,7 @@ export class StringToJSON implements toJSON {
       }
       return this.toJSON(data)
     }
-    return jsonPretty(data)
+    return jsonPretty(data, this._sortKey)
   }
 
   supported(data: any): boolean {

@@ -8,6 +8,10 @@
       <label class="block text-sm font-medium mb-1">字体大小</label>
       <InputNumber v-model="editorSetting.setting.fontSize" class="w-full" :min="10" :max="40" />
     </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">格式化时键排序</label>
+      <ToggleSwitch v-model="editorSetting.setting.sortKey"  />
+    </div>
   </div>
 </template>
 

@@ -2,6 +2,7 @@ import * as monaco from 'monaco-editor';
 import { StringToJSON } from '@/utils/toJson';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import { loadSetting } from '@/composables/useEditorSetting';
 // import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 // import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 // import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
@@ -63,7 +64,8 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
 
 monaco.languages.registerDocumentFormattingEditProvider('json', {
   provideDocumentFormattingEdits(model) {
-    const formatted = new StringToJSON().toJSON(model.getValue());
+    const settings = loadSetting();
+    const formatted = new StringToJSON(settings.sortKey).toJSON(model.getValue());
     navigator.clipboard.writeText(formatted);
     return [
       {
@@ -76,7 +78,8 @@ monaco.languages.registerDocumentFormattingEditProvider('json', {
 
 monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
   provideDocumentRangeFormattingEdits(model, range) {
-    const formatted = new StringToJSON().toJSON(model.getValueInRange(range));
+    const settings = loadSetting();
+    const formatted = new StringToJSON(settings.sortKey).toJSON(model.getValueInRange(range));
     navigator.clipboard.writeText(formatted);
     return [
       {
@@ -86,10 +89,11 @@ monaco.languages.registerDocumentRangeFormattingEditProvider('json', {
     ]
   },
   provideDocumentRangesFormattingEdits(model, ranges, options, token) {
+    const settings = loadSetting();
     return ranges.map(range => {
       return {
         range: range,
-        text: new StringToJSON().toJSON(model.getValueInRange(range))
+        text: new StringToJSON(settings.sortKey).toJSON(model.getValueInRange(range))
       }
     });
   },

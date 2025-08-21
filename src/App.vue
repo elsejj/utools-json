@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full h-full flex flex-col">
+  <div class="w-full h-full flex flex-col" @keydown="onShortcut">
     <header class="flex-none border-b bg-surface p-2 flex items-center gap-2">
       <div class="flex items-center gap-2">
-        <Button icon="icon-[tabler--plus]" size="small" rounded  @click="addTab()" v-tooltip.top="'新建标签'" />
+        <Button icon="icon-[tabler--plus]" size="small" rounded  @click="addTab()" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
       </div>
       <div class="flex-1 flex items-center gap-1 overflow-x-auto">
         <template v-for="(tab, idx) in tabs" :key="tab.id">
@@ -37,7 +37,7 @@ if ((window as any).utools) {
     if (typeof action.payload === 'string' && action.payload.length > 5) {
       var content = action.payload;
       try {
-        content = new StringToJSON().toJSON(action.payload) || '';
+        content = new StringToJSON(settings.setting.sortKey).toJSON(action.payload) || '';
         if (tabs.value.length === 1 && tabs.value[0].content === '') {
           tabs.value[0].content = content;
           activateTab(0);
@@ -74,6 +74,9 @@ onMounted(() => {
   tabs.value = settings.loadTabs() || [
     newTab()
   ];
+  if (jsonEditor.value) {
+
+  }
 });
 
 onUnmounted(() => {
@@ -95,15 +98,19 @@ function addTab(content: string = '') {
 }
 
 function activateTab(index: number) {
-  if (index >= 0 && index < tabs.value.length) {
-    //console.log("active tab", index, tabs.value[index])
-    activeTab.value = index;
-    if (jsonEditor.value) {
-      jsonEditor.value.setSourceCode(tabs.value[index]?.content || '');
-    }
-  }else{
-    console.log("inactive tab", index)
+
+  if (index < 0) {
+    index = tabs.value.length - 1;
   }
+  if (index > tabs.value.length - 1) {
+    index = 0;
+  }
+
+  activeTab.value = index;
+  if (jsonEditor.value) {
+    jsonEditor.value.setSourceCode(tabs.value[index]?.content || '');
+  }
+
 }
 
 function closeTab(index: number) {
@@ -120,4 +127,24 @@ function closeTab(index: number) {
     activateTab(activeTab.value);
   }
 }
+
+function onShortcut(event: KeyboardEvent) {
+  if (event.ctrlKey && event.key === 'n') {
+    event.preventDefault();
+    addTab();
+  }else if (event.ctrlKey && event.key === 'w') {
+    event.preventDefault();
+    closeTab(activeTab.value);
+  }else if (event.ctrlKey && event.key === 'Tab') {
+    event.preventDefault();
+    if (event.shiftKey) {
+      // Move to the previous tab
+      activateTab(activeTab.value - 1);
+    } else {
+      // Move to the next tab
+      activateTab(activeTab.value + 1);
+    }
+  }
+}
+
 </script>

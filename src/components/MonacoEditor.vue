@@ -68,7 +68,7 @@ onMounted(() => {
         if (!text) {
           return;
         }
-        const jsonBody = new StringToJSON().toJSON(text)
+        const jsonBody = new StringToJSON(setting.value.sortKey).toJSON(text)
         editor?.setValue(jsonBody || text);
         await navigator.clipboard.writeText(jsonBody);
       }
@@ -111,6 +111,7 @@ function setSourceCode(code: string) {
   if (editor) {
     sourceCode.value = code;
     editor.setValue(code);
+    editor.focus();
   }
 }
 

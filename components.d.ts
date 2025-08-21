@@ -16,6 +16,7 @@ declare module 'vue' {
     MonacoDiffEditor: typeof import('./src/components/MonacoDiffEditor.vue')['default']
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
     SplitButton: typeof import('primevue/splitbutton')['default']
+    ToggleSwitch: typeof import('primevue/toggleswitch')['default']
   }
   export interface GlobalDirectives {
     Tooltip: typeof import('primevue/tooltip')['default']

@@ -25,8 +25,6 @@ const mediaQueryAborter = new AbortController();
 let originalModel: monaco.editor.ITextModel | null = null;
 let modifiedModel: monaco.editor.ITextModel | null = null;
 
-let originalChangeListener: monaco.IDisposable | null = null;
-let modifiedChangeListener: monaco.IDisposable | null = null;
 
 // 获取编辑器设置
 const editorSettingStore = useEditorSetting()
@@ -48,7 +46,7 @@ async function replacePaste() {
     if (!text) {
       return;
     }
-    const jsonBody = new StringToJSON().toJSON(text);
+    const jsonBody = new StringToJSON(setting.value.sortKey).toJSON(text);
     if (jsonBody) {
       editor?.setValue(jsonBody);
       navigator.clipboard.writeText(jsonBody);
@@ -181,6 +179,7 @@ function setSourceCode(code: string) {
   if (editor) {
     sourceCode.value = code;
     editor.setValue(code);
+    editor.focus();
   }
 }
 
