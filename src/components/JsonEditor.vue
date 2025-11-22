@@ -21,6 +21,7 @@
         <InputText
           class="flex-auto px-2 py-1 border rounded"
           type="text"
+          id="jsonPath"
           placeholder="$.<key>"
           v-model="jsonPathFilter"
           @change="filterJson"
@@ -104,7 +105,7 @@ import {
 import { StringToJSON } from "../utils/toJson";
 import "../workers/monaco";
 
-import { ref } from "vue";
+import { ref, useTemplateRef } from "vue";
 import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
 
@@ -265,7 +266,7 @@ function noEmptyValue(val: any): boolean {
 
 function filterJson() {
   if (!jsonPathFilter.value) {
-    sourceCode.value = originalSourceCode.value;
+    setSourceCode(originalSourceCode.value);
     originalSourceCode.value = "";
     return;
   }
@@ -276,12 +277,15 @@ function filterJson() {
       path: jsonPathFilter.value.trim(),
       json: JSON.parse(originalSourceCode.value),
     });
-    if (noEmptyValue(result))
-      sourceCode.value = JSON.stringify(result, null, 2);
-    else sourceCode.value = originalSourceCode.value;
+    if (noEmptyValue(result)) {
+      setSourceCode(JSON.stringify(result, null, 2));
+    } else {
+      setSourceCode(originalSourceCode.value);
+    }
+    document.getElementById("jsonPath")?.focus();
   } catch (err) {
     console.error("JSONPath error:", err);
-    sourceCode.value = originalSourceCode.value;
+    setSourceCode(originalSourceCode.value);
   }
 }
 
@@ -293,11 +297,13 @@ function toggleDiffMode() {
   diffMode.value = !diffMode.value;
 }
 
+function setSourceCode(code: string) {
+  sourceCode.value = code;
+  if (editor.value) editor.value.setSourceCode(code);
+}
+
 defineExpose({
   triggerEditorAction,
-  setSourceCode(code: string) {
-    sourceCode.value = code;
-    if (editor.value) editor.value.setSourceCode(code);
-  },
+  setSourceCode,
 });
 </script>
