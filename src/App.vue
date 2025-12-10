@@ -2,32 +2,16 @@
   <div class="w-full h-full flex flex-col" @keydown="onShortcut">
     <header class="flex-none border-b bg-surface p-2 flex items-center gap-2">
       <div class="flex items-center gap-2">
-        <Button
-          icon="icon-[tabler--plus]"
-          rounded
-          @click="addTab()"
-          class="text-xl"
-          v-tooltip.top="'新建标签\n(Ctrl+N)'"
-        />
+        <Button icon="icon-[tabler--plus]" rounded @click="addTab()" class="text-xl" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
       </div>
       <div class="flex-1 flex items-center gap-1 overflow-x-auto">
         <template v-for="(tab, idx) in tabs" :key="tab.id">
-          <div
-            :class="[
-              'px-3 py-1 rounded cursor-pointer flex items-center gap-2',
-              activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent',
-            ]"
-            @click="activateTab(idx, $event)"
-            @contextmenu="activateTab(idx, $event)"
-          >
+          <div :class="[
+            'px-3 py-1 rounded cursor-pointer flex items-center gap-2',
+            activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent',
+          ]" @click="activateTab(idx, $event)" @contextmenu="activateTab(idx, $event)">
             <span class="text-sm">{{ tab.title }}</span>
-            <Button
-              icon="icon-[tabler--x] h-6"
-              class="text-xl"
-              severity="danger"
-              text
-              @click.stop="closeTab(idx)"
-            />
+            <Button icon="icon-[tabler--x] h-6" class="text-xl" severity="danger" text @click.stop="closeTab(idx)" />
           </div>
         </template>
       </div>
@@ -91,7 +75,7 @@ if ((window as any).utools) {
         } else {
           addTab(content);
         }
-      } catch (error) {}
+      } catch (error) { }
     } else {
       activateTab(tabs.value.length - 1);
     }
@@ -129,12 +113,12 @@ function newTab(content: string = ""): Tab {
   const yymmdd_hhmmss = `${now.getFullYear() % 100}-${(now.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")} ${now
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}`;
 
   return { id: yymmdd_hhmmss, title: yymmdd_hhmmss, content };
 }
@@ -151,7 +135,7 @@ function activateTab(index: number, event?: MouseEvent) {
     jsonEditor.value.setSourceCode(tabs.value[index]?.content || "");
   }
 
-  if (event?.buttons === 2) {
+  if (event?.buttons === 2 || event?.button === 2) {
     // right click
     titleMenu.value?.show(event);
   }
