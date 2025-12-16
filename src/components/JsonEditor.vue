@@ -9,7 +9,7 @@
         class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2"
       >
         <Button
-          id="pasteReplace"
+          id="openJsonPathDoc"
           icon="icon-[tabler--help]"
           as="a"
           link
@@ -26,6 +26,13 @@
           v-model="jsonPathFilter"
           @change="filterJson"
           @input="filterJson"
+        />
+        <Button
+          id="sendRequest"
+          icon="icon-[tabler--send]"
+          rounded
+          v-tooltip.top="'发送 HTTP 请求\n(Ctrl+P)'"
+          @click="openSendDialog"
         />
         <Button
           id="pasteReplace"
@@ -82,6 +89,10 @@
         </Popover>
       </div>
     </footer>
+    <ServerSelectionDialog 
+      v-model:visible="serverDialogVisible" 
+      @select="handleServerSelect" 
+    />
   </div>
 </template>
 
@@ -90,6 +101,7 @@ import { JSONPath } from "jsonpath-plus";
 import MonacoEditor from "./MonacoEditor.vue";
 import MonacoDiffEditor from "./MonacoDiffEditor.vue";
 import EditorSetting from "./EditorSetting.vue";
+import ServerSelectionDialog from "./ServerSelectionDialog.vue";
 import {
   base64FromJson,
   htmlNestedFromJson,
@@ -105,9 +117,10 @@ import {
 import { StringToJSON } from "../utils/toJson";
 import "../workers/monaco";
 
-import { ref, useTemplateRef } from "vue";
+import { ref } from "vue";
 import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
+import type { ServerConfig } from "@/composables/useServerStore";
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -129,6 +142,11 @@ const originalSourceCode = ref("");
 const jsonPathFilter = ref("");
 const settingPanel = ref();
 const settings = useEditorSetting();
+const serverDialogVisible = ref(false);
+
+const emit = defineEmits<{
+  (e: 'open-new-tab', content: string): void
+}>();
 
 // watch(sourceCode, (v) => {
 //   emit('update:modelValue', v || '');
@@ -302,8 +320,46 @@ function setSourceCode(code: string) {
   if (editor.value) editor.value.setSourceCode(code);
 }
 
+function openSendDialog() {
+  serverDialogVisible.value = true;
+}
+
+async function handleServerSelect(server: ServerConfig) {
+  const body = sourceCode.value;
+  try {
+     const headers: Record<string, string> = {};
+     server.headers.forEach(h => {
+        if (h.enable && h.key) headers[h.key] = h.value;
+     });
+     
+     // Default Content-Type if not set for POST/PUT
+     if (!headers['Content-Type'] && (server.method === 'POST' || server.method === 'PUT')) {
+        headers['Content-Type'] = 'application/json';
+     }
+
+     const res = await fetch(server.url, {
+        method: server.method || 'POST',
+        headers,
+        body: (server.method === 'GET' || server.method === 'HEAD') ? undefined : body
+     });
+
+     const text = await res.text();
+     // Try to format if JSON
+     try {
+        const json = JSON.parse(text);
+        emit('open-new-tab', JSON.stringify(json, null, 2));
+     } catch {
+        emit('open-new-tab', text);
+     }
+  } catch (err: any) {
+     console.error(err);
+     emit('open-new-tab', `Error: ${err.message}`);
+  }
+}
+
 defineExpose({
   triggerEditorAction,
   setSourceCode,
+  openSendDialog
 });
 </script>

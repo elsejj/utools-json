@@ -35,13 +35,17 @@
     </header>
 
     <main class="flex-auto">
-      <JsonEditor v-model="tabs[activeTab].content" ref="jsonEditor" />
+      <JsonEditor 
+        v-model="tabs[activeTab].content" 
+        ref="jsonEditor" 
+        @open-new-tab="addTab"
+      />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import JsonEditor from "./components/JsonEditor.vue";
 import { StringToJSON } from "./utils/toJson";
 import { useEditorSetting } from "./composables/useEditorSetting";
@@ -191,6 +195,11 @@ function onShortcut(event: KeyboardEvent) {
   } else if (event.ctrlKey && event.key === "w") {
     event.preventDefault();
     closeTab(activeTab.value);
+  } else if (event.ctrlKey && event.key === "p") {
+    event.preventDefault();
+    if (jsonEditor.value) {
+      jsonEditor.value.openSendDialog();
+    }
   } else if (event.ctrlKey && event.key === "Tab") {
     event.preventDefault();
     if (event.shiftKey) {
