@@ -1,22 +1,81 @@
-# Repository Guidelines
+# AGENTS.md
 
-## Project Structure & Module Organization
-`src/main.ts` bootstraps the Vue 3 app with PrimeVue, Pinia, and Monaco helpers. Vue components live in `src/components/` using PascalCase file names, while shared logic belongs under `src/composables/` (e.g., `useEditorSetting.ts`). Utility helpers reside in `src/utils/`, and long-running editor tasks run inside `src/workers/monaco.ts`. Keep static assets in `src/assets/` and uTools metadata under `public/plugin.json`. Production bundles land in `dist/`, and reference material stays in `doc/`.
+This document is intended to guide AI agents and developers working on the `utools-json` project. It outlines the technical stack, project structure, and development workflows.
 
-## Build, Test, and Development Commands
-- `bun install` installs dependencies; commit the updated `bun.lock` whenever versions change.
-- `bun run dev` launches the Vite dev server (default `http://localhost:5173`) with hot reloading for rapid UI validation.
-- `bun run build` outputs an optimized bundle to `dist/`, ready for packaging as a uTools plugin.
-- `bun run preview` serves the production build locally so you can sanity-check routing, assets, and editor behaviour.
+## Technical Stack
 
-## Coding Style & Naming Conventions
-Write TypeScript with Vue 3 single-file components, keeping indentation at two spaces and aligning braces per the existing files. Components stay PascalCase (`MonacoEditor.vue`), composables are camelCase with a `use` prefix, and background workers adopt lowercase filenames. Maintain ES module imports and terminate multi-line statements with semicolons for consistency. Tailwind utility classes belong in templates, while shared styling tweaks should be centralized in `src/assets/main.css`.
+- **Runtime & Package Manager**: [Bun](https://bun.sh)
+- **Frontend Framework**: [Vue 3](https://vuejs.org/) (Composition API, `<script setup>`)
+- **Language**: TypeScript
+- **Build Tool**: [Vite](https://vitejs.dev/) (currently using `rolldown-vite` experimental build)
+- **UI Component Library**: [PrimeVue](https://primevue.org/) v4
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) v4 (integrated with PrimeVue via `tailwindcss-primeui`)
+- **State Management**: [Pinia](https://pinia.vuejs.org/)
+- **Code Editor**: [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- **Data Parsing**: `json5`, `yaml`, `smol-toml`
+- **Icons**: Iconify
 
-## Testing Guidelines
-Automated tests are not wired up yet, so manually verify new behaviour via `bun run dev`, paying attention to JSON parsing, diff comparison, and editor settings flows. If you add tests, use Vitest plus Vue Test Utils, mirror feature names in filenames (`MonacoEditor.spec.ts`), and place them alongside the source under `src/__tests__/`. Document new test scripts in `package.json` so contributors can discover them quickly.
+## Project Layout
 
-## Commit & Pull Request Guidelines
-Mirror the existing short, imperative commit style (`add tab`, `use vite:rolldown`). Keep related changes in a single commit and include `bun.lock` updates when dependencies shift. Pull requests must describe the user-facing change, call out manual or automated testing, and attach screenshots or GIFs for UI adjustments. Highlight any edits to `public/plugin.json` so reviewers can verify uTools command metadata before merge.
+- **`src/`**: Source code root.
+  - **`main.ts`**: Application entry point. Bootstraps Vue with PrimeVue, Pinia, and router (if applicable).
+  - **`App.vue`**: Root component.
+  - **`components/`**: Vue components (PascalCase). Contains the UI building blocks.
+  - **`composables/`**: Vue composables (camelCase, e.g., `useEditorSetting.ts`) for shared state and logic.
+  - **`utils/`**: Utility functions, primarily for data transformation.
+    - `fromJson.ts`, `toJson.ts`: Core logic for converting between JSON and other formats.
+    - `tableJson.ts`: Logic for table-based JSON views.
+  - **`workers/`**: Web Workers, specifically for offloading heavy tasks like Monaco Editor initialization/processing.
+  - **`assets/`**: Static assets and global styles (`main.css`).
+- **`public/`**: Static files served as-is. Includes `plugin.json` which defines the uTools plugin metadata (commands, keywords).
+- **`dist/`**: Production build output directory.
+- **`doc/`**: Documentation and reference materials.
 
-## Distribution & Plugin Tips
-Always sync `public/plugin.json` with new commands, shortcuts, or icons. Before publishing, rebuild with `bun run build`, review the generated `dist/` assets, and bundle them according to the uTools store submission process. Capture version bumps in `CHANGELOG.md` when preparing a release.
+## Build & Run Commands
+
+All commands are run using `bun`.
+
+- **Install Dependencies**:
+  ```bash
+  bun install
+  ```
+
+- **Start Development Server**:
+  ```bash
+  bun run dev
+  ```
+  Starts Vite at `http://localhost:5173` (by default).
+
+- **Build for Production**:
+  ```bash
+  bun run build
+  ```
+  Generates optimized assets in `dist/`. Required before packaging for uTools.
+
+- **Preview Production Build**:
+  ```bash
+  bun run preview
+  ```
+  Locally preview the production build to verify behavior.
+
+## Coding Guidelines
+
+### Style & Naming
+- **Vue Components**: Use PascalCase (e.g., `MonacoEditor.vue`).
+- **Composables**: Use camelCase with `use` prefix (e.g., `useTheme.ts`).
+- **Indentation**: 2 spaces.
+- **Imports**: standard ES imports.
+- **CSS**: Use Tailwind utility classes primarily. Custom CSS goes in `src/assets/main.css`.
+
+### Testing
+- Currently, manual verification is the primary method.
+- Run `bun run dev` and test the JSON parsing, editor features, and diff views.
+- Future tests should use Vitest + Vue Test Utils in `src/__tests__/`.
+
+### Version Control
+- **Commits**: Short, imperative summaries (e.g., `add json5 support`, `fix toolbar layout`).
+- **Lockfile**: Always include `bun.lock` changes when dependencies are modified.
+
+## Release & Distribution
+- **uTools Metadata**: Ensure `public/plugin.json` is updated with any new commands or features.
+- **Changelog**: meaningful updates in `CHANGELOG.md`.
