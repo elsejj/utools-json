@@ -1,17 +1,17 @@
 <template>
   <div class="w-full h-full flex flex-col" @keydown="onShortcut">
-    <header class="flex-none border-b bg-surface p-2 flex items-center gap-2">
-      <div class="flex items-center gap-2">
-        <Button icon="icon-[tabler--plus]" rounded @click="addTab()" class="text-xl" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
+    <header class="flex-none border-b bg-surface py-2 flex items-center gap-2 h-12">
+      <div class="flex items-center gap-2 pl-2">
+        <Button icon="icon-[tabler--plus]" rounded @click="addTab()" class="text-sm h-6 w-6"" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
       </div>
-      <div class="flex-1 flex items-center gap-1 overflow-x-auto">
+      <div class="flex-1 flex items-center gap-1 overflow-x-auto py-2">
         <template v-for="(tab, idx) in tabs" :key="tab.id">
           <div :class="[
-            'px-3 py-1 rounded cursor-pointer flex items-center gap-2',
+            'px-2 py-1 rounded cursor-pointer flex items-center gap-2',
             activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent',
           ]" @click="activateTab(idx, $event)" @contextmenu="activateTab(idx, $event)">
             <span class="text-sm">{{ tab.title }}</span>
-            <Button icon="icon-[tabler--x] h-6" class="text-xl" severity="danger" text @click.stop="closeTab(idx)" />
+            <Button icon="icon-[tabler--x]" class="text-sm h-4" severity="danger" text @click.stop="closeTab(idx)" />
           </div>
         </template>
       </div>
