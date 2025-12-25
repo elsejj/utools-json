@@ -2,7 +2,7 @@
   <div class="w-full h-full flex flex-col" @keydown="onShortcut">
     <header class="flex-none border-b bg-surface py-2 flex items-center gap-2 h-12">
       <div class="flex items-center gap-2 pl-2">
-        <Button icon="icon-[tabler--plus]" rounded @click="addTab()" class="text-sm h-6 w-6"" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
+        <Button icon="icon-[tabler--plus]" @click="addTab()" class="text-sm h-6 w-6 rounded" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
       </div>
       <div class="flex-1 flex items-center gap-1 overflow-x-auto py-2">
         <template v-for="(tab, idx) in tabs" :key="tab.id">
@@ -134,6 +134,13 @@ function addTab(content: string = "") {
 }
 
 function activateTab(index: number, event?: MouseEvent) {
+
+  if (index < 0) {
+    index = tabs.value.length - 1;
+  } else if (index >= tabs.value.length) {
+    index = 0;
+  }
+
   activeTab.value = index;
   if (jsonEditor.value) {
     jsonEditor.value.setSourceCode(tabs.value[index]?.content || "");

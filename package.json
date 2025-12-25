@@ -1,6 +1,6 @@
 {
   "name": "utools-json",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,18 +16,16 @@
     "monaco-editor": "^0.52.2",
     "pinia": "^3.0.4",
     "primevue": "^4.5.4",
-    "smol-toml": "^1.5.2",
+    "smol-toml": "^1.6.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.26",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
-    "@iconify-json/devicon-plain": "^1.2.49",
+    "@iconify-json/devicon-plain": "^1.2.50",
     "@iconify-json/fluent-mdl2": "^1.2.1",
-    "@iconify-json/tabler": "^1.2.24",
-    "@iconify/tailwind4": "^1.2.0",
-    "@iconify-json/tabler": "^1.2.23",
+    "@iconify-json/tabler": "^1.2.25",
     "@iconify/tailwind4": "^1.2.0",
     "@iconify/vue": "^5.0.0",
     "@primevue/auto-import-resolver": "^4.5.4",
