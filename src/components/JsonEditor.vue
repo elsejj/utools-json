@@ -121,6 +121,7 @@ import { ref } from "vue";
 import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
 import type { ServerConfig } from "@/composables/useServerStore";
+import { xmlFromJson } from "@/utils/xml";
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -182,6 +183,11 @@ const copyActions = [
     label: "TOML",
     icon: "icon-[tabler--toml]",
     command: () => copyJSON(tomlFromJson),
+  },
+  {
+    label: "XML",
+    icon: "icon-[tabler--file-type-xml]",
+    command: () => copyJSON(xmlFromJson),
   },
   {
     label: "Javascript",

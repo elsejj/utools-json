@@ -2,6 +2,7 @@ import * as YAML from "yaml";
 //@ts-ignore
 import JSON5 from "json5";
 import TOML from "smol-toml";
+import { parseXML } from "./xml";
 
 export interface toJSON {
   toJSON: (data: any) => string;
@@ -27,7 +28,7 @@ function reOrderKeys(key: string, obj: any): any {
  * @throws Will throw an error if the input is not a valid JSON string
  */
 function jsonPretty(jsonText: string, sortKey: boolean = true): string {
-  const parsers = [JSON.parse, JSON5.parse, YAML.parse, TOML.parse];
+  const parsers = [JSON.parse, JSON5.parse, parseXML, TOML.parse, YAML.parse];
   for (const parser of parsers) {
     try {
       //@ts-ignore
@@ -53,7 +54,7 @@ export class StringToJSON implements toJSON {
       throw new Error("Input must be a string");
     }
     const stringSigns = ['"', "'", "`"];
-    const jsonSings = ["{", "[", ":", "\n"];
+    const jsonSigns = ["{", "[", ":", "\n", '"'];
     const isQuoted = stringSigns.some(
       (sign) => data.startsWith(sign) && data.endsWith(sign)
     );
@@ -62,7 +63,7 @@ export class StringToJSON implements toJSON {
       data = JSON5.parse(data);
     } else if (
       data.length > 20 &&
-      !jsonSings.some((sign) => data.includes(sign))
+      !jsonSigns.some((sign) => data.includes(sign))
     ) {
       // maybe a base64 string, try to decode it
       try {
