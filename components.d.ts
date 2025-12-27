@@ -19,6 +19,7 @@ declare module 'vue' {
     JsonEditor: typeof import('./src/components/JsonEditor.vue')['default']
     MonacoDiffEditor: typeof import('./src/components/MonacoDiffEditor.vue')['default']
     MonacoEditor: typeof import('./src/components/MonacoEditor.vue')['default']
+    Select: typeof import('primevue/select')['default']
     ServerSelectionDialog: typeof import('./src/components/ServerSelectionDialog.vue')['default']
     SplitButton: typeof import('primevue/splitbutton')['default']
     ToggleSwitch: typeof import('primevue/toggleswitch')['default']

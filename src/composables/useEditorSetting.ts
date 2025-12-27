@@ -3,12 +3,6 @@ import { ref, watch } from 'vue'
 
 
 
-// 自定义AI模型
-export interface CustomAiModel {
-  baseURL: string
-  apiKey: string
-  model: string
-}
 
 // 编辑器设置
 export interface EditorSetting {
@@ -16,7 +10,7 @@ export interface EditorSetting {
   fontSize: number
   theme: string
   sortKey: boolean
-  aiModel?: string | CustomAiModel
+  aiModel: string
 }
 
 const LOCAL_SETTING_KEY = 'json_ultra_editor_setting'
@@ -39,7 +33,8 @@ export function loadSetting(): EditorSetting {
     fontFamily: "'Cascadia Code NF', 'JetBrains Mono','Fira Code Retina', Consolas, 'Source Code Pro', 'Menlo', 'Courier New', monospace, 'Source Han Sans VF', '思源黑体'",
     fontSize: 13,
     theme: '',
-    sortKey: true
+    sortKey: true,
+    aiModel: ''
   }
 }
 

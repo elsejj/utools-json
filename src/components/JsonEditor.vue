@@ -26,11 +26,12 @@
         class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2"
       >
         <SplitButton
-          id="queryHelper"
+          id="askAI"
           icon="icon-[tabler--ai] w-6 h-6"
           rounded
           v-tooltip.top="'查询帮助'"
           :model="queryHelperActions"
+          @click="askAI"
         />
         <InputText
           class="flex-auto px-2 py-1 border rounded"
@@ -40,6 +41,7 @@
           v-model="jsonPathFilter"
           @change="filterJson"
           @input="filterJson"
+          @keypress.enter="askAI"
         />
         <Button
           id="sendRequest"
@@ -343,8 +345,6 @@ async function filterJson() {
       filteredCode.value = JSON.stringify(result, null, 2);
     }
   } catch (err) {
-    console.error("JSONPath error:", err);
-    // 出错时不更新结果，或者可以显示错误信息
     filteredCode.value = ""; 
   }
 }
@@ -356,11 +356,64 @@ function openFilteredInNewTab() {
 }
 
 function openURL(url: string) {
-  if ((window as any).utools) {
-    (window as any).utools.shellOpenExternal(url);
+  const utools = window.utools
+  if (utools) {
+    utools.shellOpenExternal(url);
   }else{
     window.open(url, '_blank');
   }
+}
+
+async function askAI() {
+  if (!jsonPathFilter.value) {
+    return
+  }
+
+  const utools = window.utools
+  if (utools) {
+    filteredCode.value = "//AI正在处理你的请求，请稍等...";
+    try {
+      await utools.ai({
+      model: settings.setting.aiModel,
+      messages: buildAiRequest(),
+      }, (chunk) => {
+        filteredCode.value += chunk.content;
+      });
+      const json = extractJSON(filteredCode.value);
+      if (json) {
+        filteredCode.value = json;
+        const parsed = JSON.parse(json);
+        if (parsed && parsed["#query"]) {
+          jsonPathFilter.value = parsed["#query"];
+        }
+      }
+    } catch(err) {
+      console.log(err)
+    }
+  }
+}
+
+function buildAiRequest() : UtoolsAiMessage[] {
+  const jsonContent = "```json\n" + sourceCode.value + "\n```";
+  const messages: UtoolsAiMessage[] = [
+    {
+      role: "system",
+      content: `你是一个JSON处理专家, 请根据用户的要求, 对以下的JSON数据进行处理.
+你总是应该输出合法的JSON格式, 如果用户要求你编写 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
+${jsonContent}`
+    },
+    {
+      role: "user",
+      content: jsonPathFilter.value
+    },
+  ];
+  return messages;
+}
+
+function extractJSON(jsonString: string) {
+  const firstLeft = jsonString.indexOf("{");
+  const lastRight = jsonString.lastIndexOf("}");
+  return jsonString.substring(firstLeft, lastRight + 1);
 }
 
 function toggleDiffMode() {
