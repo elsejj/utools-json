@@ -2,6 +2,23 @@
   <div class="w-full h-full flex flex-col">
     <main class="flex-auto">
       <MonacoDiffEditor v-if="diffMode" ref="editor" v-model="sourceCode" />
+      <div v-else-if="showSplitView" class="flex flex-row h-full w-full gap-1">
+        <MonacoEditor ref="editor" v-model="sourceCode" class="flex-1 min-w-0" />
+        <div class="flex-1 min-w-0 relative flex flex-col">
+          <div class="absolute top-2 right-4 z-10 flex gap-1">
+             <Button
+              icon="icon-[tabler--external-link]"
+              rounded
+              text
+              severity="secondary" 
+              class="bg-surface-0! dark:bg-surface-900! shadow-sm border border-surface-200 dark:border-surface-700" 
+              v-tooltip.left="'在新标签页打开结果'"
+              @click="openFilteredInNewTab"
+            />
+          </div>
+          <MonacoEditor v-model="filteredCode" :read-only="true" />
+        </div>
+      </div>
       <MonacoEditor v-else ref="editor" v-model="sourceCode" />
     </main>
     <footer>
@@ -117,7 +134,7 @@ import {
 import { StringToJSON } from "../utils/toJson";
 import "../workers/monaco";
 
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
 import type { ServerConfig } from "@/composables/useServerStore";
@@ -139,11 +156,13 @@ const sourceCode = defineModel<string>({
 
 const diffMode = ref(false);
 const editor = ref<IMonacoEditor | null>(null);
-const originalSourceCode = ref("");
+const filteredCode = ref("");
 const jsonPathFilter = ref("");
 const settingPanel = ref();
 const settings = useEditorSetting();
 const serverDialogVisible = ref(false);
+
+const showSplitView = computed(() => !diffMode.value && !!jsonPathFilter.value);
 
 const emit = defineEmits<{
   (e: 'open-new-tab', content: string): void
@@ -279,36 +298,38 @@ async function copyJSON(
   }
 }
 
-function noEmptyValue(val: any): boolean {
-  if (val) {
-    if (Array.isArray(val)) return val.length > 0;
-    if (typeof val === "object") return Object.keys(val).length > 0;
-    return true;
-  }
-  return false;
-}
 
 function filterJson() {
   if (!jsonPathFilter.value) {
-    setSourceCode(originalSourceCode.value, false);
-    originalSourceCode.value = "";
+    filteredCode.value = "";
     return;
   }
-  if (!originalSourceCode.value)
-    originalSourceCode.value = sourceCode.value || "";
+  
   try {
+    const jsonContent = sourceCode.value || "";
+    // 如果为空，不处理
+    if (!jsonContent) return;
+
     const result = JSONPath({
       path: jsonPathFilter.value.trim(),
-      json: JSON.parse(originalSourceCode.value),
+      json: JSON.parse(jsonContent),
     });
-    if (noEmptyValue(result)) {
-      setSourceCode(JSON.stringify(result, null, 2), false);
+    
+    if (result !== undefined) {
+      filteredCode.value = JSON.stringify(result, null, 2);
     } else {
-      setSourceCode(originalSourceCode.value, false);
+      filteredCode.value = "";
     }
   } catch (err) {
     console.error("JSONPath error:", err);
-    setSourceCode(originalSourceCode.value, false);
+    // 出错时不更新结果，或者可以显示错误信息
+    filteredCode.value = ""; 
+  }
+}
+
+function openFilteredInNewTab() {
+  if (filteredCode.value) {
+    emit('open-new-tab', filteredCode.value);
   }
 }
 

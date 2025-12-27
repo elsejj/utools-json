@@ -95,6 +95,12 @@ watch(() => setting.value.theme, val => {
   if (editor && val) monaco.editor.setTheme(val);
 });
 
+watch(() => sourceCode.value, val => {
+  if (editor) {
+    editor.setValue(val);
+  }
+});
+
 onUnmounted(() => {
   if (editor) {
     editor.dispose();
