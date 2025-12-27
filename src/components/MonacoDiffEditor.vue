@@ -174,12 +174,14 @@ function triggerEditorAction(action: string, payload: any = {}) {
   diffEditor?.getModifiedEditor().trigger('editor', action, payload);
 }
 
-function setSourceCode(code: string) {
+function setSourceCode(code: string, shouldFocus: boolean = true) {
   const editor = diffEditor?.getModifiedEditor();
   if (editor) {
     sourceCode.value = code;
     editor.setValue(code);
-    editor.focus();
+    if (shouldFocus) {
+      editor.focus();
+    }
   }
 }
 

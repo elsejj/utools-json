@@ -125,7 +125,7 @@ import { xmlFromJson } from "@/utils/xml";
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
-  setSourceCode(code: string): void;
+  setSourceCode(code: string, shouldFocus?: boolean): void;
 }
 
 // const props = defineProps<{ modelValue?: string }>();
@@ -290,7 +290,7 @@ function noEmptyValue(val: any): boolean {
 
 function filterJson() {
   if (!jsonPathFilter.value) {
-    setSourceCode(originalSourceCode.value);
+    setSourceCode(originalSourceCode.value, false);
     originalSourceCode.value = "";
     return;
   }
@@ -302,14 +302,13 @@ function filterJson() {
       json: JSON.parse(originalSourceCode.value),
     });
     if (noEmptyValue(result)) {
-      setSourceCode(JSON.stringify(result, null, 2));
+      setSourceCode(JSON.stringify(result, null, 2), false);
     } else {
-      setSourceCode(originalSourceCode.value);
+      setSourceCode(originalSourceCode.value, false);
     }
-    document.getElementById("jsonPath")?.focus();
   } catch (err) {
     console.error("JSONPath error:", err);
-    setSourceCode(originalSourceCode.value);
+    setSourceCode(originalSourceCode.value, false);
   }
 }
 
@@ -321,9 +320,9 @@ function toggleDiffMode() {
   diffMode.value = !diffMode.value;
 }
 
-function setSourceCode(code: string) {
+function setSourceCode(code: string, shouldFocus: boolean = true) {
   sourceCode.value = code;
-  if (editor.value) editor.value.setSourceCode(code);
+  if (editor.value) editor.value.setSourceCode(code, shouldFocus);
 }
 
 function openSendDialog() {

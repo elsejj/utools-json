@@ -107,11 +107,13 @@ function triggerEditorAction(action: string, payload: any = {}) {
   editor?.trigger('editor', action, payload);
 }
 
-function setSourceCode(code: string) {
+function setSourceCode(code: string, shouldFocus: boolean = true) {
   if (editor) {
     sourceCode.value = code;
     editor.setValue(code);
-    editor.focus();
+    if (shouldFocus) {
+      editor.focus();
+    }
   }
 }
 
