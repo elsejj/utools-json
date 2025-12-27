@@ -25,21 +25,18 @@
       <div
         class="flex-none h-12 flex items-center justify-between w-full gap-1 p-2"
       >
-        <Button
-          id="openJsonPathDoc"
-          icon="icon-[tabler--help]"
-          as="a"
-          link
-          v-tooltip.top="'JSON Path 文档'"
-          href="https://github.com/JSONPath-Plus/JSONPath"
-          target="_blank"
-          @click="openURL('https://github.com/JSONPath-Plus/JSONPath')"
+        <SplitButton
+          id="queryHelper"
+          icon="icon-[tabler--ai] w-6 h-6"
+          rounded
+          v-tooltip.top="'查询帮助'"
+          :model="queryHelperActions"
         />
         <InputText
           class="flex-auto px-2 py-1 border rounded"
           type="text"
           id="jsonPath"
-          placeholder="$.<key>"
+          placeholder="$.开头的JSONPath 或 jq表达式 或 任意内容然后点击AI按钮"
           v-model="jsonPathFilter"
           @change="filterJson"
           @input="filterJson"
@@ -134,11 +131,12 @@ import {
 import { StringToJSON } from "../utils/toJson";
 import "../workers/monaco";
 
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
 import type { ServerConfig } from "@/composables/useServerStore";
 import { xmlFromJson } from "@/utils/xml";
+import * as jq from "jq-wasm";
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -157,7 +155,7 @@ const sourceCode = defineModel<string>({
 const diffMode = ref(false);
 const editor = ref<IMonacoEditor | null>(null);
 const filteredCode = ref("");
-const jsonPathFilter = ref("");
+const jsonPathFilter = defineModel<string>("filter", { default: "" });
 const settingPanel = ref();
 const settings = useEditorSetting();
 const serverDialogVisible = ref(false);
@@ -167,6 +165,10 @@ const showSplitView = computed(() => !diffMode.value && !!jsonPathFilter.value);
 const emit = defineEmits<{
   (e: 'open-new-tab', content: string): void
 }>();
+
+watch(jsonPathFilter, () => {
+    filterJson();
+});
 
 // watch(sourceCode, (v) => {
 //   emit('update:modelValue', v || '');
@@ -264,6 +266,19 @@ const copyActions = [
   },
 ];
 
+const queryHelperActions = [
+  {
+    label: "JSONPath",
+    icon: "icon-[tabler--external-link]",
+    command: () => openURL("https://github.com/JSONPath-Plus/JSONPath") 
+  },
+  {
+    label: "jq",
+    icon: "icon-[tabler--external-link]",
+    command: () => openURL("https://jqlang.org/manual/#basic-filters") 
+  },
+];
+
 function triggerEditorAction(action: string, payload: any = {}) {
   if (editor.value) {
     editor.value.triggerEditorAction(action, payload);
@@ -299,26 +314,33 @@ async function copyJSON(
 }
 
 
-function filterJson() {
+async function filterJson() {
+  const jsonContent = sourceCode.value || "";
+  // 如果为空，不处理
+  if (!jsonContent) return;
+
   if (!jsonPathFilter.value) {
     filteredCode.value = "";
     return;
   }
   
   try {
-    const jsonContent = sourceCode.value || "";
-    // 如果为空，不处理
-    if (!jsonContent) return;
 
-    const result = JSONPath({
-      path: jsonPathFilter.value.trim(),
-      json: JSON.parse(jsonContent),
-    });
-    
-    if (result !== undefined) {
+    if (jsonPathFilter.value.startsWith("$")) {
+      const result = JSONPath({
+        path: jsonPathFilter.value.trim(),
+        json: JSON.parse(jsonContent),
+        resultType: "value",
+      });
+      
+      if (result !== undefined) {
+        filteredCode.value = JSON.stringify(result, null, 2);
+      } else {
+        filteredCode.value = "";
+      }
+    }else{ 
+      const result = await jq.json(jsonContent, jsonPathFilter.value);
       filteredCode.value = JSON.stringify(result, null, 2);
-    } else {
-      filteredCode.value = "";
     }
   } catch (err) {
     console.error("JSONPath error:", err);
@@ -334,7 +356,11 @@ function openFilteredInNewTab() {
 }
 
 function openURL(url: string) {
-  if ((window as any).utools) (window as any).utools.shellOpenExternal(url);
+  if ((window as any).utools) {
+    (window as any).utools.shellOpenExternal(url);
+  }else{
+    window.open(url, '_blank');
+  }
 }
 
 function toggleDiffMode() {

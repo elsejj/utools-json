@@ -1,12 +1,22 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 
-// 定义 EditorSetting 类型
+
+
+// 自定义AI模型
+export interface CustomAiModel {
+  baseURL: string
+  apiKey: string
+  model: string
+}
+
+// 编辑器设置
 export interface EditorSetting {
   fontFamily: string
   fontSize: number
   theme: string
   sortKey: boolean
+  aiModel?: string | CustomAiModel
 }
 
 const LOCAL_SETTING_KEY = 'json_ultra_editor_setting'

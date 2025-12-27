@@ -21,6 +21,7 @@
     <main class="flex-auto">
       <JsonEditor 
         v-model="tabs[activeTab].content" 
+        v-model:filter="tabs[activeTab].filter"
         ref="jsonEditor" 
         @open-new-tab="addTab"
       />
@@ -94,6 +95,7 @@ type Tab = {
   id: string;
   title: string;
   content: string;
+  filter?: string;
 };
 
 const tabs = ref<Tab[]>([newTab()]);
@@ -124,7 +126,7 @@ function newTab(content: string = ""): Tab {
         .toString()
         .padStart(2, "0")}`;
 
-  return { id: yymmdd_hhmmss, title: yymmdd_hhmmss, content };
+  return { id: yymmdd_hhmmss, title: yymmdd_hhmmss, content, filter: "" };
 }
 
 function addTab(content: string = "") {
