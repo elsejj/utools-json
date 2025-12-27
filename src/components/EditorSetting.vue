@@ -31,6 +31,7 @@ onMounted(async () => {
   const utools = window.utools
   if (utools) {
     aiModels.value = await utools.allAiModels()
+    console.log(aiModels.value)
   }
 })
 

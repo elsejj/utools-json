@@ -29,7 +29,7 @@
           id="askAI"
           icon="icon-[tabler--ai] w-6 h-6"
           rounded
-          v-tooltip.top="'查询帮助'"
+          v-tooltip.top="'AI处理'"
           :model="queryHelperActions"
           @click="askAI"
         />
@@ -371,10 +371,10 @@ async function askAI() {
 
   const utools = window.utools
   if (utools) {
-    filteredCode.value = "//AI正在处理你的请求，请稍等...";
+    filteredCode.value = `"AI正在处理你的请求，请稍等..."`;
     try {
       await utools.ai({
-      model: settings.setting.aiModel,
+      model: settings.setting.aiModel ? settings.setting.aiModel : undefined,
       messages: buildAiRequest(),
       }, (chunk) => {
         filteredCode.value += chunk.content;
@@ -395,11 +395,15 @@ async function askAI() {
 
 function buildAiRequest() : UtoolsAiMessage[] {
   const jsonContent = "```json\n" + sourceCode.value + "\n```";
+  const jsonSign = "```json\n```\n"
   const messages: UtoolsAiMessage[] = [
     {
       role: "system",
       content: `你是一个JSON处理专家, 请根据用户的要求, 对以下的JSON数据进行处理.
-你总是应该输出合法的JSON格式, 如果用户要求你编写 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
+你总是应该输出合法的JSON格式, 用 markdown 语法 ${jsonSign} 包裹JSON块. 
+你只能输出一个JSON块.
+如果用户要求你编写 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
+否则输出你生成的JSON
 ${jsonContent}`
     },
     {
