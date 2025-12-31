@@ -138,7 +138,25 @@ import { Popover } from "primevue";
 import { useEditorSetting } from "@/composables/useEditorSetting";
 import type { ServerConfig } from "@/composables/useServerStore";
 import { xmlFromJson } from "@/utils/xml";
-import * as jq from "jq-wasm";
+//@ts-ignore
+import JaqWorker from '../workers/jaq?worker'
+import { skeleton } from "@/utils/skeleton";
+
+const jaqWorker = new JaqWorker();
+jaqWorker.onmessage = (e: any) => {
+  try{
+    const text = e.data as string
+    if (text.startsWith("Error")) {
+      filteredCode.value = ""
+    } else if (text.startsWith("<span")) {
+      const json = text.replace(/<[^>]*>/g, '');
+      const obj = JSON.parse(json);
+      filteredCode.value = JSON.stringify(obj, null, 2)
+    }
+  }catch(err){
+    console.log(err)
+  }
+}
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -172,9 +190,6 @@ watch(jsonPathFilter, () => {
     filterJson();
 });
 
-// watch(sourceCode, (v) => {
-//   emit('update:modelValue', v || '');
-// });
 
 const copyActions = [
   {
@@ -327,7 +342,7 @@ async function filterJson() {
   }
   
   try {
-
+    const t1 = performance.now();
     if (jsonPathFilter.value.startsWith("$")) {
       const result = JSONPath({
         path: jsonPathFilter.value.trim(),
@@ -341,10 +356,21 @@ async function filterJson() {
         filteredCode.value = "";
       }
     }else{ 
-      const result = await jq.json(jsonContent, jsonPathFilter.value);
-      filteredCode.value = JSON.stringify(result, null, 2);
+      jaqWorker.postMessage({
+        filter: jsonPathFilter.value,
+        input: jsonContent,
+        settings: {
+          "raw-input":false,
+          "slurp":false,
+          "null-input":false,
+          "raw-output":false,
+          "compact":true,
+          "tab":false,
+          "indent":"2"},
+      })
     }
   } catch (err) {
+    console.log(err)
     filteredCode.value = ""; 
   }
 }
@@ -394,7 +420,17 @@ async function askAI() {
 }
 
 function buildAiRequest() : UtoolsAiMessage[] {
-  const jsonContent = "```json\n" + sourceCode.value + "\n```";
+
+  let jsonContent = "";
+  let skeletonPrompt = ""
+  if (sourceCode.value.length > 2000) {
+    const obj = JSON.parse(sourceCode.value);
+    jsonContent = "```json\n" + JSON.stringify(skeleton(obj), null, 2) + "\n```";
+    skeletonPrompt = "由于JSON数据过大，以下是保持了原始结构的骨架, 此时你只能编写JSONPath或jq查询语句";
+  }else{
+    jsonContent = "```json\n" + sourceCode.value + "\n```";
+  }
+
   const jsonSign = "```json\n```\n"
   const messages: UtoolsAiMessage[] = [
     {
@@ -402,7 +438,7 @@ function buildAiRequest() : UtoolsAiMessage[] {
       content: `你是一个JSON处理专家, 请根据用户的要求, 对以下的JSON数据进行处理.
 你总是应该输出合法的JSON格式, 用 markdown 语法 ${jsonSign} 包裹JSON块. 
 你只能输出一个JSON块.
-如果用户要求你编写 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
+如果用户要求你编写 JSONPath 或 jq 查询语句, 或是${skeletonPrompt}, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
 否则输出你生成的JSON
 ${jsonContent}`
     },
@@ -411,6 +447,7 @@ ${jsonContent}`
       content: jsonPathFilter.value
     },
   ];
+  console.log(messages);
   return messages;
 }
 
