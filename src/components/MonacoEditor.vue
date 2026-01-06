@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { StringToJSON } from '@/utils/toJson';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { onMounted, onUnmounted, watch, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, watch, useTemplateRef, ref } from 'vue';
 import { storeToRefs } from 'pinia'
 import { useEditorSetting } from '@/composables/useEditorSetting'
 
@@ -18,6 +18,7 @@ const sourceCode = defineModel({
   type: String,
   default: ''
 });
+const sourceCodeChangedByEditor = ref(false);
 
 // 获取编辑器设置
 const editorSettingStore = useEditorSetting()
@@ -49,6 +50,7 @@ onMounted(() => {
     editor.onDidChangeModelContent(() => {
       const value = editor?.getValue() || '';
       if (value) {
+        sourceCodeChangedByEditor.value = true;
         sourceCode.value = value;
       }
     });
@@ -96,8 +98,9 @@ watch(() => setting.value.theme, val => {
 });
 
 watch(() => sourceCode.value, val => {
-  if (editor) {
+  if (editor && !sourceCodeChangedByEditor.value) {
     editor.setValue(val);
+    sourceCodeChangedByEditor.value = false;
   }
 });
 
