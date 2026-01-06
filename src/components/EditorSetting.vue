@@ -16,6 +16,10 @@
       <label class="block text-sm font-medium mb-1">AI模型</label>
       <Select v-model="editorSetting.setting.aiModel" :options="aiModels" optionLabel="label" optionValue="id" placeholder="选择AI模型" class="w-full md:w-56" />
     </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1">AI 能处理的 JSON 字节限制</label>
+      <InputNumber v-model="editorSetting.setting.maxAiRequestSize" class="w-full" :min="100" :max="1000000" />
+    </div>
   </div>
 </template>
 

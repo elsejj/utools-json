@@ -11,6 +11,7 @@ export interface EditorSetting {
   theme: string
   sortKey: boolean
   aiModel: string
+  maxAiRequestSize: number
 }
 
 const LOCAL_SETTING_KEY = 'json_ultra_editor_setting'
@@ -24,6 +25,12 @@ export function loadSetting(): EditorSetting {
       if (s.sortKey === undefined || s.sortKey === null) {
         s.sortKey = true
       }
+      if (!s.maxAiRequestSize) {
+        s.maxAiRequestSize = 2000
+      }
+      if (!s.aiModel) {
+        s.aiModel = ''
+      }
       return s as EditorSetting
     } catch {
       // ignore parse error, fallback to default
@@ -34,7 +41,8 @@ export function loadSetting(): EditorSetting {
     fontSize: 13,
     theme: '',
     sortKey: true,
-    aiModel: ''
+    aiModel: '',
+    maxAiRequestSize: 2000
   }
 }
 

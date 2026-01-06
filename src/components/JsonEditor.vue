@@ -423,12 +423,13 @@ function buildAiRequest() : UtoolsAiMessage[] {
 
   let jsonContent = "";
   let skeletonPrompt = ""
-  if (sourceCode.value.length > 2000) {
+  if (sourceCode.value.length > settings.setting.maxAiRequestSize) {
     const obj = JSON.parse(sourceCode.value);
     jsonContent = "```json\n" + JSON.stringify(skeleton(obj), null, 2) + "\n```";
-    skeletonPrompt = "由于JSON数据过大，以下是保持了原始结构的骨架, 此时你只能编写JSONPath或jq查询语句";
+    skeletonPrompt = "由于JSON数据过大，以下是保持了原始结构的骨架, 请编写JSONPath或jq查询语句来完成用户的要求";
   }else{
     jsonContent = "```json\n" + sourceCode.value + "\n```";
+    skeletonPrompt = "请根据用户的要求, 对以下的JSON数据进行处理或编写相应的JSONPath或jq查询语句";
   }
 
   const jsonSign = "```json\n```\n"
@@ -438,7 +439,10 @@ function buildAiRequest() : UtoolsAiMessage[] {
       content: `你是一个JSON处理专家, 请根据用户的要求, 对以下的JSON数据进行处理.
 你总是应该输出合法的JSON格式, 用 markdown 语法 ${jsonSign} 包裹JSON块. 
 你只能输出一个JSON块.
-如果用户要求你编写 JSONPath 或 jq 查询语句, 或是${skeletonPrompt}, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
+
+${skeletonPrompt}
+
+如果你编写了 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
 否则输出你生成的JSON
 ${jsonContent}`
     },
