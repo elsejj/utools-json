@@ -17,6 +17,10 @@ export function parseXML(xml: string): any {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xml, "text/xml");
     const root = doc.documentElement;
+    
+    if (root.querySelector('parsererror')) {
+      throw new Error('Invalid XML');
+    }
 
     // when root element is xml, return it's children
     if (root.tagName === 'xml') {
