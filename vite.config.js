@@ -6,6 +6,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import Components from 'unplugin-vue-components/vite';
 import { PrimeVueResolver } from '@primevue/auto-import-resolver';
+import wasm from "vite-plugin-wasm";
+//import topLevelAwait from "vite-plugin-top-level-await";
 
 
 // https://vite.dev/config/
@@ -15,6 +17,8 @@ export default defineConfig({
     vue(),
     //vueDevTools(),
     tailwindcss(),
+    wasm(),
+    //topLevelAwait(),
     Components({
       resolvers: [PrimeVueResolver()],
       dts: true, // Enable TypeScript support
@@ -27,6 +31,7 @@ export default defineConfig({
   },
   build: {
     //minify: false,
+    chunkSizeWarningLimit: 1000000,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -56,7 +61,7 @@ export default defineConfig({
               },
             }
           ],
-        }
+        },
       },
     },
 

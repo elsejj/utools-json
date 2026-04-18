@@ -6,37 +6,61 @@
     </div>
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">字体大小</label>
-      <InputNumber v-model="editorSetting.setting.fontSize" class="w-full" :min="10" :max="40" />
+      <InputNumber
+        v-model="editorSetting.setting.fontSize"
+        class="w-full"
+        :min="10"
+        :max="40"
+      />
     </div>
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">格式化时键排序</label>
-      <ToggleSwitch v-model="editorSetting.setting.sortKey"  />
+      <ToggleSwitch v-model="editorSetting.setting.sortKey" />
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-1"
+        >使用原生 JSON 解析（更快但可能数字精度丢失）</label
+      >
+      <ToggleSwitch v-model="editorSetting.setting.nativeParser" />
     </div>
     <div class="mb-4">
       <label class="block text-sm font-medium mb-1">AI模型</label>
-      <Select v-model="editorSetting.setting.aiModel" :options="aiModels" optionLabel="label" optionValue="id" placeholder="选择AI模型" class="w-full md:w-56" />
+      <Select
+        v-model="editorSetting.setting.aiModel"
+        :options="aiModels"
+        optionLabel="label"
+        optionValue="id"
+        placeholder="选择AI模型"
+        class="w-full md:w-56"
+      />
     </div>
     <div class="mb-4">
-      <label class="block text-sm font-medium mb-1">AI 能处理的 JSON 字节限制</label>
-      <InputNumber v-model="editorSetting.setting.maxAiRequestSize" class="w-full" :min="100" :max="1000000" />
+      <label class="block text-sm font-medium mb-1"
+        >AI 能处理的 JSON 字节限制</label
+      >
+      <InputNumber
+        v-model="editorSetting.setting.maxAiRequestSize"
+        class="w-full"
+        :min="100"
+        :max="1000000"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useEditorSetting } from '../composables/useEditorSetting'
+import { onMounted, ref } from "vue";
+import { useEditorSetting } from "../composables/useEditorSetting";
 
-const editorSetting = useEditorSetting()
+const editorSetting = useEditorSetting();
 
-const aiModels = ref<UtoolsAiModel[]>([])
+const aiModels = ref<UtoolsAiModel[]>([]);
 
 onMounted(async () => {
-  const utools = window.utools
+  const utools = window.utools;
   if (utools) {
-    aiModels.value = await utools.allAiModels()
-    console.log(aiModels.value)
+    aiModels.value = await utools.allAiModels();
+    console.log(aiModels.value);
   }
-})
-
+});
 </script>

@@ -3,6 +3,7 @@ import * as YAML from "yaml";
 import JSON5 from "json5";
 import TOML from "smol-toml";
 import { parseXML } from "./xml";
+import { format } from "rjson";
 
 export interface toJSON {
   toJSON: (data: any) => string;
@@ -44,19 +45,26 @@ function jsonPretty(jsonText: string, sortKey: boolean = true): string {
 
 export class StringToJSON implements toJSON {
   private _sortKey: boolean;
+  private _nativeParser: boolean;
 
-  constructor(sortKey: boolean) {
+  constructor(sortKey: boolean, nativeParser: boolean) {
     this._sortKey = sortKey;
+    this._nativeParser = nativeParser;
   }
 
   toJSON(data: any): string {
     if (typeof data !== "string") {
       throw new Error("Input must be a string");
     }
+
+    if (!this._nativeParser) {
+      return format(data, this._sortKey);
+    }
+
     const stringSigns = ['"', "'", "`"];
     const jsonSigns = ["{", "[", ":", "\n", '"'];
     const isQuoted = stringSigns.some(
-      (sign) => data.startsWith(sign) && data.endsWith(sign)
+      (sign) => data.startsWith(sign) && data.endsWith(sign),
     );
     if (isQuoted) {
       // convert to a valid JSON string

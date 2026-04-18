@@ -3,15 +3,19 @@
     <main class="flex-auto">
       <MonacoDiffEditor v-if="diffMode" ref="editor" v-model="sourceCode" />
       <div v-else-if="showSplitView" class="flex flex-row h-full w-full gap-1">
-        <MonacoEditor ref="editor" v-model="sourceCode" class="flex-1 min-w-0" />
+        <MonacoEditor
+          ref="editor"
+          v-model="sourceCode"
+          class="flex-1 min-w-0"
+        />
         <div class="flex-1 min-w-0 relative flex flex-col">
           <div class="absolute top-2 right-4 z-10 flex gap-1">
-             <Button
+            <Button
               icon="icon-[tabler--external-link]"
               rounded
               text
-              severity="secondary" 
-              class="bg-surface-0! dark:bg-surface-900! shadow-sm border border-surface-200 dark:border-surface-700" 
+              severity="secondary"
+              class="bg-surface-0! dark:bg-surface-900! shadow-sm border border-surface-200 dark:border-surface-700"
               v-tooltip.left="'在新标签页打开结果'"
               @click="openFilteredInNewTab"
             />
@@ -105,9 +109,9 @@
         </Popover>
       </div>
     </footer>
-    <ServerSelectionDialog 
-      v-model:visible="serverDialogVisible" 
-      @select="handleServerSelect" 
+    <ServerSelectionDialog
+      v-model:visible="serverDialogVisible"
+      @select="handleServerSelect"
     />
   </div>
 </template>
@@ -139,24 +143,24 @@ import { useEditorSetting } from "@/composables/useEditorSetting";
 import type { ServerConfig } from "@/composables/useServerStore";
 import { xmlFromJson } from "@/utils/xml";
 //@ts-ignore
-import JaqWorker from '../workers/jaq?worker'
+import JaqWorker from "../workers/jaq?worker";
 import { skeleton } from "@/utils/skeleton";
 
 const jaqWorker = new JaqWorker();
 jaqWorker.onmessage = (e: any) => {
-  try{
-    const text = e.data as string
+  try {
+    const text = e.data as string;
     if (text.startsWith("Error")) {
-      filteredCode.value = ""
+      filteredCode.value = "";
     } else if (text.startsWith("<span")) {
-      const json = text.replace(/<[^>]*>/g, '');
+      const json = text.replace(/<[^>]*>/g, "");
       const obj = JSON.parse(json);
-      filteredCode.value = JSON.stringify(obj, null, 2)
+      filteredCode.value = JSON.stringify(obj, null, 2);
     }
-  }catch(err){
-    console.log(err)
+  } catch (err) {
+    console.log(err);
   }
-}
+};
 
 interface IMonacoEditor {
   triggerEditorAction(action: string, payload?: any): void;
@@ -183,13 +187,12 @@ const serverDialogVisible = ref(false);
 const showSplitView = computed(() => !diffMode.value && !!jsonPathFilter.value);
 
 const emit = defineEmits<{
-  (e: 'open-new-tab', content: string): void
+  (e: "open-new-tab", content: string): void;
 }>();
 
 watch(jsonPathFilter, () => {
-    filterJson();
+  filterJson();
 });
-
 
 const copyActions = [
   {
@@ -257,7 +260,7 @@ const copyActions = [
           text
             .split("\n")
             .map((line) => JSON.stringify(line))
-            .join("\n") + ";"
+            .join("\n") + ";",
       ),
   },
   {
@@ -287,12 +290,12 @@ const queryHelperActions = [
   {
     label: "JSONPath",
     icon: "icon-[tabler--external-link]",
-    command: () => openURL("https://github.com/JSONPath-Plus/JSONPath") 
+    command: () => openURL("https://github.com/JSONPath-Plus/JSONPath"),
   },
   {
     label: "jq",
     icon: "icon-[tabler--external-link]",
-    command: () => openURL("https://jqlang.org/manual/#basic-filters") 
+    command: () => openURL("https://jqlang.org/manual/#basic-filters"),
   },
 ];
 
@@ -309,14 +312,17 @@ function showSettingPanel(event: Event) {
 async function pasteReplace() {
   const text = await navigator.clipboard.readText();
   if (!text) return;
-  const jsonBody = new StringToJSON(settings.setting.sortKey).toJSON(text);
+  const jsonBody = new StringToJSON(
+    settings.setting.sortKey,
+    settings.setting.nativeParser,
+  ).toJSON(text);
   sourceCode.value = jsonBody;
   await navigator.clipboard.writeText(jsonBody);
 }
 
 async function copyJSON(
   processor?: (text: string) => string,
-  _mimetype?: string
+  _mimetype?: string,
 ): Promise<string> {
   const text = sourceCode.value || "";
   if (!text) return "";
@@ -330,7 +336,6 @@ async function copyJSON(
   }
 }
 
-
 async function filterJson() {
   const jsonContent = sourceCode.value || "";
   // 如果为空，不处理
@@ -340,7 +345,7 @@ async function filterJson() {
     filteredCode.value = "";
     return;
   }
-  
+
   try {
     const t1 = performance.now();
     if (jsonPathFilter.value.startsWith("$")) {
@@ -349,62 +354,68 @@ async function filterJson() {
         json: JSON.parse(jsonContent),
         resultType: "value",
       });
-      
+
       if (result !== undefined) {
         filteredCode.value = JSON.stringify(result, null, 2);
       } else {
         filteredCode.value = "";
       }
-    }else{ 
+    } else {
       jaqWorker.postMessage({
         filter: jsonPathFilter.value,
         input: jsonContent,
         settings: {
-          "raw-input":false,
-          "slurp":false,
-          "null-input":false,
-          "raw-output":false,
-          "compact":true,
-          "tab":false,
-          "indent":"2"},
-      })
+          "raw-input": false,
+          slurp: false,
+          "null-input": false,
+          "raw-output": false,
+          compact: true,
+          tab: false,
+          indent: "2",
+        },
+      });
     }
   } catch (err) {
-    console.log(err)
-    filteredCode.value = ""; 
+    console.log(err);
+    filteredCode.value = "";
   }
 }
 
 function openFilteredInNewTab() {
   if (filteredCode.value) {
-    emit('open-new-tab', filteredCode.value);
+    emit("open-new-tab", filteredCode.value);
   }
 }
 
 function openURL(url: string) {
-  const utools = window.utools
+  const utools = window.utools;
   if (utools) {
     utools.shellOpenExternal(url);
-  }else{
-    window.open(url, '_blank');
+  } else {
+    window.open(url, "_blank");
   }
 }
 
 async function askAI() {
   if (!jsonPathFilter.value) {
-    return
+    return;
   }
 
-  const utools = window.utools
+  const utools = window.utools;
   if (utools) {
     filteredCode.value = `"AI正在处理你的请求，请稍等..."`;
     try {
-      await utools.ai({
-      model: settings.setting.aiModel ? settings.setting.aiModel : undefined,
-      messages: buildAiRequest(),
-      }, (chunk) => {
-        filteredCode.value += chunk.content;
-      });
+      await utools.ai(
+        {
+          model: settings.setting.aiModel
+            ? settings.setting.aiModel
+            : undefined,
+          messages: buildAiRequest(),
+        },
+        (chunk) => {
+          filteredCode.value += chunk.content;
+        },
+      );
       const json = extractJSON(filteredCode.value);
       if (json) {
         filteredCode.value = json;
@@ -413,26 +424,28 @@ async function askAI() {
           jsonPathFilter.value = parsed["#query"];
         }
       }
-    } catch(err) {
-      console.log(err)
+    } catch (err) {
+      console.log(err);
     }
   }
 }
 
-function buildAiRequest() : UtoolsAiMessage[] {
-
+function buildAiRequest(): UtoolsAiMessage[] {
   let jsonContent = "";
-  let skeletonPrompt = ""
+  let skeletonPrompt = "";
   if (sourceCode.value.length > settings.setting.maxAiRequestSize) {
     const obj = JSON.parse(sourceCode.value);
-    jsonContent = "```json\n" + JSON.stringify(skeleton(obj), null, 2) + "\n```";
-    skeletonPrompt = "由于JSON数据过大，以下是保持了原始结构的骨架, 请编写JSONPath或jq查询语句来完成用户的要求";
-  }else{
+    jsonContent =
+      "```json\n" + JSON.stringify(skeleton(obj), null, 2) + "\n```";
+    skeletonPrompt =
+      "由于JSON数据过大，以下是保持了原始结构的骨架, 请编写JSONPath或jq查询语句来完成用户的要求";
+  } else {
     jsonContent = "```json\n" + sourceCode.value + "\n```";
-    skeletonPrompt = "请根据用户的要求, 对以下的JSON数据进行处理或编写相应的JSONPath或jq查询语句";
+    skeletonPrompt =
+      "请根据用户的要求, 对以下的JSON数据进行处理或编写相应的JSONPath或jq查询语句";
   }
 
-  const jsonSign = "```json\n```\n"
+  const jsonSign = "```json\n```\n";
   const messages: UtoolsAiMessage[] = [
     {
       role: "system",
@@ -444,11 +457,11 @@ ${skeletonPrompt}
 
 如果你编写了 JSONPath 或 jq 查询语句, 请输出一个包含 "#query" 键值的JSON对象, 例如 {"#query": "$.name"}
 否则输出你生成的JSON
-${jsonContent}`
+${jsonContent}`,
     },
     {
       role: "user",
-      content: jsonPathFilter.value
+      content: jsonPathFilter.value,
     },
   ];
   console.log(messages);
@@ -477,39 +490,43 @@ function openSendDialog() {
 async function handleServerSelect(server: ServerConfig) {
   const body = sourceCode.value;
   try {
-     const headers: Record<string, string> = {};
-     server.headers.forEach(h => {
-        if (h.enable && h.key) headers[h.key] = h.value;
-     });
-     
-     // Default Content-Type if not set for POST/PUT
-     if (!headers['Content-Type'] && (server.method === 'POST' || server.method === 'PUT')) {
-        headers['Content-Type'] = 'application/json';
-     }
+    const headers: Record<string, string> = {};
+    server.headers.forEach((h) => {
+      if (h.enable && h.key) headers[h.key] = h.value;
+    });
 
-     const res = await fetch(server.url, {
-        method: server.method || 'POST',
-        headers,
-        body: (server.method === 'GET' || server.method === 'HEAD') ? undefined : body
-     });
+    // Default Content-Type if not set for POST/PUT
+    if (
+      !headers["Content-Type"] &&
+      (server.method === "POST" || server.method === "PUT")
+    ) {
+      headers["Content-Type"] = "application/json";
+    }
 
-     const text = await res.text();
-     // Try to format if JSON
-     try {
-        const json = JSON.parse(text);
-        emit('open-new-tab', JSON.stringify(json, null, 2));
-     } catch {
-        emit('open-new-tab', text);
-     }
+    const res = await fetch(server.url, {
+      method: server.method || "POST",
+      headers,
+      body:
+        server.method === "GET" || server.method === "HEAD" ? undefined : body,
+    });
+
+    const text = await res.text();
+    // Try to format if JSON
+    try {
+      const json = JSON.parse(text);
+      emit("open-new-tab", JSON.stringify(json, null, 2));
+    } catch {
+      emit("open-new-tab", text);
+    }
   } catch (err: any) {
-     console.error(err);
-     emit('open-new-tab', `Error: ${err.message}`);
+    console.error(err);
+    emit("open-new-tab", `Error: ${err.message}`);
   }
 }
 
 defineExpose({
   triggerEditorAction,
   setSourceCode,
-  openSendDialog
+  openSendDialog,
 });
 </script>

@@ -1,17 +1,33 @@
 <template>
   <div class="w-full h-full flex flex-col" @keydown="onShortcut">
-    <header class="flex-none border-b bg-surface py-2 flex items-center gap-2 h-12">
+    <header
+      class="flex-none border-b bg-surface py-2 flex items-center gap-2 h-12"
+    >
       <div class="flex items-center gap-2 pl-2">
-        <Button icon="icon-[tabler--plus]" @click="addTab()" class="text-sm h-6 w-6 rounded" v-tooltip.top="'新建标签\n(Ctrl+N)'" />
+        <Button
+          icon="icon-[tabler--plus]"
+          @click="addTab()"
+          v-tooltip.top="'新建标签\n(Ctrl+N)'"
+        />
       </div>
       <div class="flex-1 flex items-center gap-1 overflow-x-auto py-2">
         <template v-for="(tab, idx) in tabs" :key="tab.id">
-          <div :class="[
-            'px-2 py-1 rounded cursor-pointer flex items-center gap-2',
-            activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent',
-          ]" @click="activateTab(idx, $event)" @contextmenu="activateTab(idx, $event)">
+          <div
+            :class="[
+              'px-2 py-1 rounded cursor-pointer flex items-center gap-2',
+              activeTab === idx ? 'bg-surface-300 shadow' : 'bg-transparent',
+            ]"
+            @click="activateTab(idx, $event)"
+            @contextmenu="activateTab(idx, $event)"
+          >
             <span class="text-sm">{{ tab.title }}</span>
-            <Button icon="icon-[tabler--x]" class="text-sm h-4" severity="danger" text @click.stop="closeTab(idx)" />
+            <Button
+              icon="icon-[tabler--x]"
+              class="text-sm h-4"
+              severity="danger"
+              text
+              @click.stop="closeTab(idx)"
+            />
           </div>
         </template>
       </div>
@@ -19,10 +35,10 @@
     </header>
 
     <main class="flex-auto">
-      <JsonEditor 
-        v-model="tabs[activeTab].content" 
+      <JsonEditor
+        v-model="tabs[activeTab].content"
         v-model:filter="tabs[activeTab].filter"
-        ref="jsonEditor" 
+        ref="jsonEditor"
         @open-new-tab="addTab"
       />
     </main>
@@ -72,15 +88,17 @@ if ((window as any).utools) {
       var content = action.payload;
       try {
         content =
-          new StringToJSON(settings.setting.sortKey).toJSON(action.payload) ||
-          "";
+          new StringToJSON(
+            settings.setting.sortKey,
+            settings.setting.nativeParser,
+          ).toJSON(action.payload) || "";
         if (tabs.value.length === 1 && tabs.value[0].content === "") {
           tabs.value[0].content = content;
           activateTab(0);
         } else {
           addTab(content);
         }
-      } catch (error) { }
+      } catch (error) {}
     } else {
       activateTab(tabs.value.length - 1);
     }
@@ -119,12 +137,12 @@ function newTab(content: string = ""): Tab {
   const yymmdd_hhmmss = `${now.getFullYear() % 100}-${(now.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")} ${now
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}`;
 
   return { id: yymmdd_hhmmss, title: yymmdd_hhmmss, content, filter: "" };
 }
@@ -136,7 +154,6 @@ function addTab(content: string = "") {
 }
 
 function activateTab(index: number, event?: MouseEvent) {
-
   if (index < 0) {
     index = tabs.value.length - 1;
   } else if (index >= tabs.value.length) {

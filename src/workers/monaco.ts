@@ -62,9 +62,10 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
 monaco.languages.registerDocumentFormattingEditProvider("json", {
   provideDocumentFormattingEdits(model) {
     const settings = loadSetting();
-    const formatted = new StringToJSON(settings.sortKey).toJSON(
-      model.getValue()
-    );
+    const formatted = new StringToJSON(
+      settings.sortKey,
+      settings.nativeParser,
+    ).toJSON(model.getValue());
     navigator.clipboard.writeText(formatted);
     return [
       {
@@ -78,9 +79,10 @@ monaco.languages.registerDocumentFormattingEditProvider("json", {
 monaco.languages.registerDocumentRangeFormattingEditProvider("json", {
   provideDocumentRangeFormattingEdits(model, range) {
     const settings = loadSetting();
-    const formatted = new StringToJSON(settings.sortKey).toJSON(
-      model.getValueInRange(range)
-    );
+    const formatted = new StringToJSON(
+      settings.sortKey,
+      settings.nativeParser,
+    ).toJSON(model.getValueInRange(range));
     navigator.clipboard.writeText(formatted);
     return [
       {
@@ -94,8 +96,8 @@ monaco.languages.registerDocumentRangeFormattingEditProvider("json", {
     return ranges.map((range) => {
       return {
         range: range,
-        text: new StringToJSON(settings.sortKey).toJSON(
-          model.getValueInRange(range)
+        text: new StringToJSON(settings.sortKey, settings.nativeParser).toJSON(
+          model.getValueInRange(range),
         ),
       };
     });
@@ -180,7 +182,7 @@ monaco.languages.registerHoverProvider("json", {
           position.lineNumber,
           word?.startColumn || position.column,
           position.lineNumber,
-          word?.endColumn || position.column
+          word?.endColumn || position.column,
         ),
         contents: lines.map((value) => ({ value })),
       };
