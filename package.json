@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:rjson": "cd rjson && wasm-pack build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,7 +17,7 @@
     "monaco-editor": "^0.52.2",
     "pinia": "^3.0.4",
     "primevue": "^4.5.5",
-    "rjson": "/home/jia/repo/rjson/pkg",
+    "rjson": "./rjson/pkg",
     "smol-toml": "^1.6.1",
     "tailwindcss": "^4.2.2",
     "tailwindcss-primeui": "^0.6.1",
