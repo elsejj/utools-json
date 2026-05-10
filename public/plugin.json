@@ -31,6 +31,12 @@
           "label": "Base64 JSON"
         },
         {
+          "type": "regex",
+          "minLength": 20,
+          "match": "/\t.*\t.*\t/",
+          "label": "Table-like"
+        },
+        {
           "type": "over",
           "minLength": 20,
           "label": "YAML/Toml/..."
@@ -44,5 +50,5 @@
   "description": "一个全能的JSON处理工具，添加了官方JSON编辑器所缺失的功能",
   "author": "Good",
   "homepage": "https://github.com/elsejj/utools-json",
-  "version": "1.0.20"
+  "version": "1.0.21"
 }
