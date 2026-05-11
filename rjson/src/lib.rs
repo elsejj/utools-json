@@ -49,6 +49,16 @@ fn yaml_to_json(yaml: &saphyr::Yaml) -> serde_json::Value {
 }
 
 fn csv_to_json(text: &str) -> Result<serde_json::Value, csv::Error> {
+  if text
+    .trim()
+    .starts_with(|c| c == '{' || c == '"' || c == '[')
+  {
+    return Err(csv::Error::from(std::io::Error::new(
+      std::io::ErrorKind::InvalidData,
+      "Input looks like JSON, not CSV",
+    )));
+  }
+
   let (tab, comma, semicolon) = text.lines().take(5).fold((0, 0, 0), |mut acc, line| {
     for c in line.bytes() {
       match c {
@@ -97,6 +107,13 @@ fn csv_to_json(text: &str) -> Result<serde_json::Value, csv::Error> {
         return Err(err);
       }
     }
+  }
+
+  if value.is_empty() {
+    return Err(csv::Error::from(std::io::Error::new(
+      std::io::ErrorKind::InvalidData,
+      "No records found",
+    )));
   }
 
   Ok(Value::Array(value))
